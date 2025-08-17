@@ -3,24 +3,38 @@ import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import DemoVideo from "@/components/DemoVideo";
 
 const Hero = () => {
-  const handleWatchDemo = () => {
-    const scrollToDemo = () => {
-      const el = document.getElementById('demo-section');
-      if (el) {
-        try {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch {
-          el.scrollIntoView();
-        }
-        return true;
-      }
-      return false;
-    };
+  const handleWatchDemo = (e?: any) => {
+    try {
+      if (e?.preventDefault) e.preventDefault();
+    } catch {}
 
-    if (!scrollToDemo()) {
-      window.location.hash = 'demo-section';
-      setTimeout(scrollToDemo, 100);
+    const el = document.getElementById('demo-section');
+    const header = document.querySelector('header') as HTMLElement | null;
+    const headerHeight = header?.offsetHeight ?? 0;
+
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
+      try {
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      } catch {
+        window.scrollTo(0, y);
+      }
+      return;
     }
+
+    // Fallback: set hash and try again shortly
+    window.location.hash = 'demo-section';
+    setTimeout(() => {
+      const el2 = document.getElementById('demo-section');
+      if (el2) {
+        const y2 = el2.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
+        try {
+          window.scrollTo({ top: y2, behavior: 'smooth' });
+        } catch {
+          window.scrollTo(0, y2);
+        }
+      }
+    }, 50);
   };
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
@@ -88,7 +102,7 @@ const Hero = () => {
           </div>
           
           {/* Interactive Demo */}
-          <div id="demo-section" className="relative">
+          <div id="demo-section" className="relative scroll-mt-24">
             <DemoVideo />
           </div>
         </div>
