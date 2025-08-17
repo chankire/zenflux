@@ -43,8 +43,8 @@ const Hero = () => {
               Start Free Trial
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button asChild variant="outline" size="lg" onClick={handleWatchDemo} aria-controls="demo-section">
-              <a href="#demo-section">Watch Demo</a>
+            <Button variant="outline" size="lg" onClick={handleWatchDemo} aria-controls="demo-section">
+              Watch Demo
             </Button>
           </div>
           
