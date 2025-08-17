@@ -37,6 +37,21 @@ serve(async (req) => {
 
     console.log('Seeding demo data for user:', user.id);
 
+    // First ensure user profile exists
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .upsert({
+        id: user.id,
+        email: user.email!,
+        first_name: user.user_metadata?.first_name || 'Demo',
+        last_name: user.user_metadata?.last_name || 'User'
+      });
+
+    if (profileError && !profileError.message.includes('duplicate')) {
+      console.error('Profile error:', profileError);
+      // Don't throw here, just log
+    }
+
     // Add user to demo organization
     const { error: membershipError } = await supabase
       .from('memberships')
@@ -46,8 +61,11 @@ serve(async (req) => {
         role: 'org_owner'
       });
 
-    if (membershipError && !membershipError.message.includes('duplicate')) {
-      throw membershipError;
+    if (membershipError) {
+      console.error('Membership error:', membershipError);
+      if (!membershipError.message.includes('duplicate')) {
+        throw membershipError;
+      }
     }
 
     // Create sample bank connections and accounts
