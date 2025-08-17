@@ -10,6 +10,10 @@ import ReactPlayer from "react-player/lazy";
 import { format, addDays, addWeeks, addMonths, addQuarters } from "date-fns";
 import { useCurrency } from "@/hooks/useCurrency";
 
+interface DemoVideoProps {
+  triggerDemo?: boolean;
+}
+
 // Demo data for the video
 const generateDemoData = (period: string) => {
   const now = new Date();
@@ -126,12 +130,13 @@ const chartConfig = {
   Travel: { label: "Travel", color: "hsl(0, 84%, 60%)" },
 };
 
-const DemoVideo = () => {
+const DemoVideo = ({ triggerDemo = false }: DemoVideoProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [period, setPeriod] = useState("daily");
   const [activeTab, setActiveTab] = useState("forecast");
   const [showVideo, setShowVideo] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const [data, setData] = useState(generateDemoData("daily"));
   const { formatCurrency } = useCurrency();
 
@@ -143,6 +148,19 @@ const DemoVideo = () => {
     "Generating 99.2% accuracy forecast...",
     "Complete - Interactive dashboard ready!"
   ];
+
+  // Handle external trigger from Hero component
+  useEffect(() => {
+    if (triggerDemo) {
+      console.log('Demo triggered from Hero');
+      // Reset and start the demo
+      setCurrentStep(0);
+      setIsPlaying(true);
+      // Also show and play the video
+      setShowVideo(true);
+      setVideoPlaying(true);
+    }
+  }, [triggerDemo]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -163,8 +181,27 @@ const DemoVideo = () => {
   const resetDemo = () => {
     setCurrentStep(0);
     setIsPlaying(false);
+    setVideoPlaying(false);
   };
 
+  const startDemo = () => {
+    setIsPlaying(!isPlaying);
+    if (!isPlaying) {
+      // If starting demo, also show and play video
+      setShowVideo(true);
+      setVideoPlaying(true);
+    }
+  };
+
+  const toggleVideo = () => {
+    const newShowVideo = !showVideo;
+    setShowVideo(newShowVideo);
+    if (newShowVideo) {
+      setVideoPlaying(true);
+    } else {
+      setVideoPlaying(false);
+    }
+  };
 
   const currentBalance = data[29]?.balance || 150000;
   const forecastBalance = data[89]?.balance || 175000;
@@ -197,7 +234,7 @@ const DemoVideo = () => {
         
         <div className="flex justify-center items-center gap-4 mt-4">
           <Button
-            onClick={() => setIsPlaying(!isPlaying)}
+            onClick={startDemo}
             disabled={currentStep >= steps.length - 1 && !isPlaying}
             className="bg-gradient-primary hover:opacity-90"
           >
@@ -208,7 +245,7 @@ const DemoVideo = () => {
             <RotateCcw className="w-4 h-4 mr-2" />
             Reset
           </Button>
-          <Button onClick={() => setShowVideo(!showVideo)} variant="secondary">
+          <Button onClick={toggleVideo} variant="secondary">
             <Video className="w-4 h-4 mr-2" />
             {showVideo ? "Hide Video" : "Watch Video"}
           </Button>
@@ -242,9 +279,30 @@ const DemoVideo = () => {
                   width="100%"
                   height="100%"
                   url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" // Replace with your actual video URL
-                  playing={false}
+                  playing={videoPlaying}
                   controls={true}
+                  muted={true} // Required for autoplay in modern browsers
                   style={{ borderRadius: '8px', overflow: 'hidden' }}
+                  onReady={() => {
+                    console.log('ReactPlayer ready');
+                  }}
+                  onPlay={() => {
+                    console.log('Video started playing');
+                    setVideoPlaying(true);
+                  }}
+                  onPause={() => {
+                    console.log('Video paused');
+                    setVideoPlaying(false);
+                  }}
+                  config={{
+                    youtube: {
+                      playerVars: {
+                        autoplay: 1,
+                        mute: 1,
+                        controls: 1,
+                      }
+                    }
+                  }}
                 />
               </div>
             </CardContent>
