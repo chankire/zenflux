@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
-import dashboardPreview from "@/assets/dashboard-preview.jpg";
+import DemoVideo from "@/components/DemoVideo";
 
 const Hero = () => {
   return (
@@ -68,14 +68,9 @@ const Hero = () => {
             </div>
           </div>
           
-          {/* Dashboard preview */}
+          {/* Interactive Demo */}
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl blur-3xl transform scale-110" />
-            <img 
-              src={dashboardPreview} 
-              alt="ZenFlux Dashboard Preview" 
-              className="relative rounded-2xl shadow-2xl border border-border/50 w-full max-w-4xl mx-auto hover:scale-105 transition-transform duration-500"
-            />
+            <DemoVideo />
           </div>
         </div>
       </div>
