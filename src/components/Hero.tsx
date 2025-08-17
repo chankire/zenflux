@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
-import DemoVideo from "@/components/DemoVideo";
 
 const Hero = () => {
   return (
@@ -31,13 +30,10 @@ const Hero = () => {
           </p>
           
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+          <div className="flex justify-center items-center mb-16">
             <Button variant="hero" size="lg" className="group">
               Start Free Trial
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button variant="outline" size="lg">
-              Watch Demo
             </Button>
           </div>
           
@@ -68,9 +64,19 @@ const Hero = () => {
             </div>
           </div>
           
-          {/* Interactive Demo */}
+          {/* Demo Placeholder */}
           <div className="relative">
-            <DemoVideo />
+            <div className="w-full max-w-4xl mx-auto p-8 bg-gradient-card rounded-2xl border border-border shadow-elegant">
+              <div className="aspect-video w-full bg-muted/20 rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <TrendingUp className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">Interactive Demo Coming Soon</h3>
+                  <p className="text-muted-foreground">Experience ZenFlux's AI-powered cash flow forecasting</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
