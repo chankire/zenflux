@@ -49,7 +49,7 @@ export const useCurrency = () => {
   }, []);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(currency.locale, {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency.code,
       minimumFractionDigits: 0,
