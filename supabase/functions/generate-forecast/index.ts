@@ -44,7 +44,7 @@ serve(async (req) => {
     const { modelId, horizon_days = 90 } = await req.json();
     console.log('Generating forecast for model:', modelId, 'horizon:', horizon_days);
 
-    // --- 👇 FIX PART 2: Use the ADMIN client for all database queries ---
+    // --- FIX PART 2: Use the ADMIN client for all database queries ---
     // Get user's organization to scope the forecast
     const { data: memberships } = await supabaseAdmin
       .from('memberships')
@@ -136,7 +136,14 @@ Return ONLY a JSON object with this structure:
     }
 
     const aiResult = await response.json();
-    const forecastData = JSON.parse(aiResult.choices[0].message.content);
+    // ---  THIS IS THE FIX ---
+    // The AI can sometimes wrap its response in a markdown block. This code extracts the raw JSON.
+    const rawContent = aiResult.choices[0].message.content;
+    const jsonMatch = rawContent.match(/{[\s\S]*}/);
+    if (!jsonMatch) {
+      throw new Error("AI did not return valid JSON content.");
+    }
+    const forecastData = JSON.parse(jsonMatch[0]);
 
     console.log('AI forecast generated successfully');
 
