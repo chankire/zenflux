@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, DollarSign, Building2, BarChart3, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DashboardHeader from '@/components/DashboardHeader';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Organization {
   id: string;
@@ -26,6 +27,7 @@ interface BankAccount {
 const Dashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { formatCurrency } = useCurrency();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -168,7 +170,7 @@ const Dashboard = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalBalance.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{formatCurrency(totalBalance)}</div>
               <p className="text-xs text-muted-foreground">
                 <TrendingUp className="inline w-3 h-3 mr-1" />
                 +2.5% from last month
@@ -182,7 +184,7 @@ const Dashboard = () => {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${(totalBalance * 0.95).toLocaleString()}</div>
+              <div className="text-2xl font-bold">{formatCurrency(totalBalance * 0.95)}</div>
               <p className="text-xs text-muted-foreground">
                 <TrendingDown className="inline w-3 h-3 mr-1" />
                 95% confidence interval
@@ -221,7 +223,7 @@ const Dashboard = () => {
                         <p className="text-sm text-muted-foreground capitalize">{account.account_type}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">${Number(account.current_balance).toLocaleString()}</p>
+                        <p className="font-medium">{formatCurrency(Number(account.current_balance))}</p>
                         <Badge variant="outline">{account.currency}</Badge>
                       </div>
                     </div>

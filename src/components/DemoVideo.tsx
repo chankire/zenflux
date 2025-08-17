@@ -8,6 +8,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Responsive
 import { Play, Pause, RotateCcw, TrendingUp, DollarSign, Calendar, Target, Video, BarChart3, Calculator } from "lucide-react";
 import ReactPlayer from "react-player/lazy";
 import { format, addDays, addWeeks, addMonths, addQuarters } from "date-fns";
+import { useCurrency } from "@/hooks/useCurrency";
 
 // Demo data for the video
 const generateDemoData = (period: string) => {
@@ -132,6 +133,7 @@ const DemoVideo = () => {
   const [activeTab, setActiveTab] = useState("forecast");
   const [showVideo, setShowVideo] = useState(false);
   const [data, setData] = useState(generateDemoData("daily"));
+  const { formatCurrency } = useCurrency();
 
   const steps = [
     "Loading transaction data...",
@@ -163,13 +165,6 @@ const DemoVideo = () => {
     setIsPlaying(false);
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(value);
-  };
 
   const currentBalance = data[29]?.balance || 150000;
   const forecastBalance = data[89]?.balance || 175000;
