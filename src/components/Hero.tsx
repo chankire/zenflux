@@ -3,38 +3,12 @@ import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import DemoVideo from "@/components/DemoVideo";
 
 const Hero = () => {
-  const handleWatchDemo = (e?: any) => {
-    try {
-      if (e?.preventDefault) e.preventDefault();
-    } catch {}
-
-    const el = document.getElementById('demo-section');
-    const header = document.querySelector('header') as HTMLElement | null;
-    const headerHeight = header?.offsetHeight ?? 0;
-
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
-      try {
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      } catch {
-        window.scrollTo(0, y);
-      }
-      return;
+  const handleWatchDemo = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const demoSection = document.getElementById('demo-section');
+    if (demoSection) {
+      demoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-
-    // Fallback: set hash and try again shortly
-    window.location.hash = 'demo-section';
-    setTimeout(() => {
-      const el2 = document.getElementById('demo-section');
-      if (el2) {
-        const y2 = el2.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
-        try {
-          window.scrollTo({ top: y2, behavior: 'smooth' });
-        } catch {
-          window.scrollTo(0, y2);
-        }
-      }
-    }, 50);
   };
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
