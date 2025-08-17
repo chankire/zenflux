@@ -1,67 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import DemoVideo from "@/components/DemoVideo";
+import { useRef, useState } from "react";
 
 const Hero = () => {
+  const [triggerDemo, setTriggerDemo] = useState(false);
+
   const handleWatchDemo = () => {
-    // More robust scroll and demo trigger implementation
-    const scrollToDemo = () => {
-      const demoSection = document.getElementById('demo-section');
-      if (!demoSection) {
-        console.warn('Demo section not found');
-        return;
-      }
-
-      // Get header height for offset calculation
-      const header = document.querySelector('header') as HTMLElement;
-      const headerHeight = header?.offsetHeight || 80; // fallback height
-
-      // Calculate scroll position
+    console.log('Watch Demo clicked');
+    
+    // Scroll to demo section first
+    const demoSection = document.getElementById('demo-section');
+    if (demoSection) {
+      const header = document.querySelector('header');
+      const headerHeight = header?.offsetHeight || 80;
       const elementRect = demoSection.getBoundingClientRect();
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const targetPosition = elementRect.top + scrollTop - headerHeight - 20;
 
-      // Smooth scroll to position
       window.scrollTo({
         top: targetPosition,
         behavior: 'smooth'
       });
+    }
 
-      // Trigger demo video play after scroll
-      setTimeout(() => {
-        triggerDemoPlay();
-      }, 800); // Wait for scroll to complete
-    };
-
-    const triggerDemoPlay = () => {
-      // Multiple approaches to trigger demo play
-      const demoSection = document.getElementById('demo-section');
-      if (demoSection) {
-        // Try to find and trigger video elements
-        const video = demoSection.querySelector('video') as HTMLVideoElement;
-        if (video) {
-          video.play().catch(e => console.log('Video autoplay prevented:', e));
-        }
-
-        // Try to find and click play button
-        const playButton = demoSection.querySelector('[data-play-button], .play-button, button[aria-label*="play"], button[title*="play"]') as HTMLButtonElement;
-        if (playButton) {
-          playButton.click();
-        }
-
-        // Dispatch custom event for demo component
-        const customEvent = new CustomEvent('startDemo', { bubbles: true });
-        demoSection.dispatchEvent(customEvent);
-
-        // Try to call any exposed play method on window
-        if (typeof (window as any).startDemo === 'function') {
-          (window as any).startDemo();
-        }
-      }
-    };
-
-    // Execute scroll and demo trigger
-    scrollToDemo();
+    // Trigger the demo after scrolling
+    setTimeout(() => {
+      setTriggerDemo(true);
+      // Reset trigger after a short delay to allow re-triggering
+      setTimeout(() => setTriggerDemo(false), 100);
+    }, 800);
   };
 
   return (
@@ -138,7 +106,7 @@ const Hero = () => {
           
           {/* Interactive Demo */}
           <div id="demo-section" className="relative scroll-mt-24">
-            <DemoVideo />
+            <DemoVideo triggerDemo={triggerDemo} />
           </div>
         </div>
       </div>
