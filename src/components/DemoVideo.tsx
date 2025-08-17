@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,13 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { Play, Pause, RotateCcw, TrendingUp, DollarSign, Calendar, Target, Video, BarChart3, Calculator } from "lucide-react";
-// Using native video instead of react-player to avoid dynamic import issues
 import { format, addDays, addWeeks, addMonths, addQuarters } from "date-fns";
 import { useCurrency } from "@/hooks/useCurrency";
-
-interface DemoVideoProps {
-  triggerDemo?: boolean;
-}
 
 // Demo data for the video
 const generateDemoData = (period: string) => {
@@ -130,7 +125,7 @@ const chartConfig = {
   Travel: { label: "Travel", color: "hsl(0, 84%, 60%)" },
 };
 
-const DemoVideo = ({ triggerDemo = false }: DemoVideoProps) => {
+const DemoVideo = forwardRef((props, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [period, setPeriod] = useState("daily");
@@ -149,27 +144,40 @@ const DemoVideo = ({ triggerDemo = false }: DemoVideoProps) => {
     "Complete - Interactive dashboard ready!"
   ];
 
-  // Handle external trigger from Hero component
-  useEffect(() => {
-    if (triggerDemo) {
-      console.log('Demo triggered from Hero');
-      // Reset and start the interactive demo only
+  // Expose methods to parent component via ref
+  useImperativeHandle(ref, () => ({
+    startDemoFromHero: () => {
+      console.log('startDemoFromHero called - DemoVideo');
       setCurrentStep(0);
       setIsPlaying(true);
-      // Don't auto-show or auto-play the video
+      console.log('Demo state set - isPlaying: true, currentStep: 0');
+    },
+    resetDemo: () => {
+      console.log('resetDemo called via ref');
+      setCurrentStep(0);
+      setIsPlaying(false);
+      setVideoPlaying(false);
     }
-  }, [triggerDemo]);
+  }));
 
   useEffect(() => {
+    console.log('Demo useEffect triggered - isPlaying:', isPlaying, 'currentStep:', currentStep);
     let interval: NodeJS.Timeout;
     if (isPlaying && currentStep < steps.length - 1) {
+      console.log('Starting demo interval');
       interval = setInterval(() => {
-        setCurrentStep(prev => prev + 1);
+        setCurrentStep(prev => {
+          console.log('Step advancing from', prev, 'to', prev + 1);
+          return prev + 1;
+        });
       }, 1500);
     } else if (currentStep >= steps.length - 1) {
+      console.log('Demo completed');
       setIsPlaying(false);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isPlaying, currentStep, steps.length]);
 
   useEffect(() => {
@@ -177,14 +185,15 @@ const DemoVideo = ({ triggerDemo = false }: DemoVideoProps) => {
   }, [period]);
 
   const resetDemo = () => {
+    console.log('Manual reset demo');
     setCurrentStep(0);
     setIsPlaying(false);
     setVideoPlaying(false);
   };
 
   const startDemo = () => {
+    console.log('Manual start demo - current isPlaying:', isPlaying);
     setIsPlaying(!isPlaying);
-    // Don't auto-show video when starting demo
   };
 
   const toggleVideo = () => {
@@ -635,6 +644,8 @@ const DemoVideo = ({ triggerDemo = false }: DemoVideoProps) => {
       )}
     </div>
   );
-};
+});
+
+DemoVideo.displayName = 'DemoVideo';
 
 export default DemoVideo;
