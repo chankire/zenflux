@@ -3,16 +3,20 @@ import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import DemoVideo from "@/components/DemoVideo";
 
 const Hero = () => {
-  // This is the new, more reliable scroll function.
+  // This is the final, most reliable scroll function.
   const handleWatchDemo = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     
-    // This ensures the browser has finished its current layout tasks before we scroll.
+    // This combination ensures we wait for the browser to be ready to paint,
+    // and then pushes our scroll logic to the end of the execution queue,
+    // giving the DemoVideo component maximum time to render.
     requestAnimationFrame(() => {
-      const demoSection = document.getElementById('demo-section');
-      if (demoSection) {
-        demoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      setTimeout(() => {
+        const demoSection = document.getElementById('demo-section');
+        if (demoSection) {
+          demoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 0); // A timeout of 0 is enough to defer execution.
     });
   };
 
@@ -64,7 +68,7 @@ const Hero = () => {
               <p className="text-muted-foreground text-sm">Advanced ML models with ensemble forecasting</p>
             </div>
             
-            <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover:shadow-glow transition-all duration-300">
+            <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover-shadow-glow transition-all duration-300">
               <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
                 <Shield className="w-6 h-6 text-accent" />
               </div>
@@ -72,7 +76,7 @@ const Hero = () => {
               <p className="text-muted-foreground text-sm">SOC2 compliant with multi-tenant isolation</p>
             </div>
             
-            <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover:shadow-glow transition-all duration-300">
+            <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover-shadow-glow transition-all duration-300">
               <div className="w-12 h-12 bg-primary-glow/20 rounded-lg flex items-center justify-center mb-4">
                 <Zap className="w-6 h-6 text-primary" />
               </div>
