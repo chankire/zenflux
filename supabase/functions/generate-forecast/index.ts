@@ -18,7 +18,7 @@ serve(async (req) => {
   try {
     console.log('Generate forecast function called');
 
-    // --- 👇 FIX PART 1: Create TWO clients ---
+    // --- FIX PART 1: Create TWO clients ---
     // 1. A client with the user's permissions, just to authenticate them.
     const supabaseAuthClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -44,7 +44,7 @@ serve(async (req) => {
     const { modelId, horizon_days = 90 } = await req.json();
     console.log('Generating forecast for model:', modelId, 'horizon:', horizon_days);
 
-    // ---  FIX PART 2: Use the ADMIN client for all database queries ---
+    // --- FIX PART 2: Use the ADMIN client for all database queries ---
     // Get user's organization to scope the forecast
     const { data: memberships } = await supabaseAdmin
       .from('memberships')
@@ -120,15 +120,15 @@ Return ONLY a JSON object with this structure:
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
-  body: JSON.stringify({
-    model: 'gpt-4o-mini',
-    response_format: { type: "json_object" }, // <-- Add this line
-    messages: [
-      // ...
-    ],
-    max_tokens: 4000,
-    temperature: 0.1,
-  }),
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'You are a financial forecasting expert. Always respond with valid JSON only.' },
+          { role: 'user', content: aiPrompt }
+        ],
+        max_tokens: 4000,
+        temperature: 0.1,
+      }),
     });
 
     if (!response.ok) {
