@@ -7,26 +7,47 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { Play, Pause, RotateCcw, TrendingUp, DollarSign, Calendar, Target, Video } from "lucide-react";
 import ReactPlayer from "react-player/lazy";
+import { format, addDays, addWeeks, addMonths, addQuarters } from "date-fns";
 
 // Demo data for the video
 const generateDemoData = (period: string) => {
   const now = new Date();
   const data = [];
   const categories = ["Revenue", "Operations", "Marketing", "Payroll", "Travel"];
-  const colors = ["hsl(214, 84%, 56%)", "hsl(143, 64%, 24%)", "hsl(280, 84%, 56%)", "hsl(35, 84%, 56%)", "hsl(0, 84%, 60%)"];
   
-  for (let i = 0; i < 90; i++) {
-    const date = new Date(now);
-    date.setDate(date.getDate() + i);
+  let dataPoints = 90;
+  let dateIncrement: (date: Date, index: number) => Date;
+  
+  switch (period) {
+    case "weekly":
+      dataPoints = 26; // ~6 months of weeks
+      dateIncrement = (date, i) => addWeeks(date, i);
+      break;
+    case "monthly":
+      dataPoints = 12; // 12 months
+      dateIncrement = (date, i) => addMonths(date, i);
+      break;
+    case "quarterly":
+      dataPoints = 8; // 8 quarters
+      dateIncrement = (date, i) => addQuarters(date, i);
+      break;
+    default: // daily
+      dataPoints = 90; // 90 days
+      dateIncrement = (date, i) => addDays(date, i);
+  }
+  
+  for (let i = 0; i < dataPoints; i++) {
+    const date = dateIncrement(now, i);
     
-    const isActual = i < 30;
+    const isActual = i < Math.floor(dataPoints / 3);
     const baseFlow = 50000 + Math.sin(i / 7) * 15000 + (Math.random() - 0.5) * 10000;
     
     const categoryData: any = {
       date: date.toISOString().split('T')[0],
+      formattedDate: formatDateForPeriod(date, period),
       balance: Math.round(baseFlow + i * 500),
       isActual,
-      confidence: isActual ? 1.0 : Math.max(0.75, 0.95 - (i - 30) * 0.005),
+      confidence: isActual ? 1.0 : Math.max(0.75, 0.95 - (i - Math.floor(dataPoints / 3)) * 0.005),
     };
     
     categories.forEach((cat, idx) => {
@@ -37,6 +58,19 @@ const generateDemoData = (period: string) => {
   }
   
   return data;
+};
+
+const formatDateForPeriod = (date: Date, period: string) => {
+  switch (period) {
+    case "weekly":
+      return format(date, "MMM dd");
+    case "monthly":
+      return format(date, "MMM yyyy");
+    case "quarterly":
+      return `Q${Math.ceil((date.getMonth() + 1) / 3)} ${format(date, "yyyy")}`;
+    default: // daily
+      return format(date, "MMM dd");
+  }
 };
 
 const transactionData = [
@@ -94,6 +128,10 @@ const DemoVideo = () => {
     }
     return () => clearInterval(interval);
   }, [isPlaying, currentStep, steps.length]);
+
+  useEffect(() => {
+    setData(generateDemoData(period));
+  }, [period]);
 
   const resetDemo = () => {
     setCurrentStep(0);
@@ -254,23 +292,28 @@ const DemoVideo = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={chartConfig} className="h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={data}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={formatCurrency} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line 
-                        type="monotone" 
-                        dataKey="balance" 
-                        stroke={chartConfig.balance.color}
-                        strokeWidth={3}
-                        dot={{ fill: chartConfig.balance.color, strokeWidth: 2, r: 4 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                 <ChartContainer config={chartConfig} className="h-[400px]">
+                   <ResponsiveContainer width="100%" height="100%">
+                     <LineChart data={data}>
+                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                       <XAxis 
+                         dataKey="formattedDate" 
+                         stroke="hsl(var(--muted-foreground))"
+                         tick={{ fontSize: 12 }}
+                         interval="preserveStartEnd"
+                       />
+                       <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={formatCurrency} />
+                       <ChartTooltip content={<ChartTooltipContent />} />
+                       <Line 
+                         type="monotone" 
+                         dataKey="balance" 
+                         stroke={chartConfig.balance.color}
+                         strokeWidth={3}
+                         dot={{ fill: chartConfig.balance.color, strokeWidth: 2, r: 4 }}
+                       />
+                     </LineChart>
+                   </ResponsiveContainer>
+                 </ChartContainer>
               </CardContent>
             </Card>
           </TabsContent>
@@ -281,21 +324,26 @@ const DemoVideo = () => {
                 <CardTitle>Cash Flow by Category</CardTitle>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={chartConfig} className="h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data.slice(0, 30)}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={formatCurrency} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="Revenue" fill={chartConfig.Revenue.color} />
-                      <Bar dataKey="Operations" fill={chartConfig.Operations.color} />
-                      <Bar dataKey="Marketing" fill={chartConfig.Marketing.color} />
-                      <Bar dataKey="Payroll" fill={chartConfig.Payroll.color} />
-                      <Bar dataKey="Travel" fill={chartConfig.Travel.color} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                 <ChartContainer config={chartConfig} className="h-[400px]">
+                   <ResponsiveContainer width="100%" height="100%">
+                     <BarChart data={data.slice(0, Math.floor(data.length / 3))}>
+                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                       <XAxis 
+                         dataKey="formattedDate" 
+                         stroke="hsl(var(--muted-foreground))"
+                         tick={{ fontSize: 12 }}
+                         interval="preserveStartEnd"
+                       />
+                       <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={formatCurrency} />
+                       <ChartTooltip content={<ChartTooltipContent />} />
+                       <Bar dataKey="Revenue" fill={chartConfig.Revenue.color} />
+                       <Bar dataKey="Operations" fill={chartConfig.Operations.color} />
+                       <Bar dataKey="Marketing" fill={chartConfig.Marketing.color} />
+                       <Bar dataKey="Payroll" fill={chartConfig.Payroll.color} />
+                       <Bar dataKey="Travel" fill={chartConfig.Travel.color} />
+                     </BarChart>
+                   </ResponsiveContainer>
+                 </ChartContainer>
               </CardContent>
             </Card>
           </TabsContent>
