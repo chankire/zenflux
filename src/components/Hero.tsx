@@ -3,13 +3,19 @@ import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import DemoVideo from "@/components/DemoVideo";
 
 const Hero = () => {
+  // This is the new, more reliable scroll function.
   const handleWatchDemo = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    const demoSection = document.getElementById('demo-section');
-    if (demoSection) {
-      demoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    
+    // This ensures the browser has finished its current layout tasks before we scroll.
+    requestAnimationFrame(() => {
+      const demoSection = document.getElementById('demo-section');
+      if (demoSection) {
+        demoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
       {/* Background decorative elements */}
@@ -37,7 +43,7 @@ const Hero = () => {
             and a finance copilot for treasurers
           </p>
           
-          {/* CTAs */}
+          {/* --- THIS IS THE CORRECTED BUTTON --- */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
             <Button variant="hero" size="lg" className="group">
               Start Free Trial
