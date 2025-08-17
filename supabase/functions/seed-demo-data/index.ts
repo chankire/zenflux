@@ -49,13 +49,13 @@ serve(async (req) => {
     }
     console.log('User profile ensured for:', user.id);
 
-    // 4. Upsert the Demo Organization
+    // 4. Upsert the Demo Organisation
     const demoOrgId = '123e4567-e89b-12d3-a456-426614174000';
     const { error: orgError } = await supabaseAdmin
       .from('organizations')
       .upsert({
         id: demoOrgId,
-        name: 'Demo Organization',
+        name: 'Demo Organisation',
         slug: 'demo-org',
         base_currency: 'USD'
       });
@@ -65,14 +65,19 @@ serve(async (req) => {
     }
     console.log('Demo organization ensured.');
 
-    // 5. Upsert the user's membership to the organization
-    const { error: membershipError } = await supabaseAdmin
-      .from('memberships')
-      .upsert({
-        user_id: user.id,
-        organization_id: demoOrgId,
-        role: 'org_owner'
-      });
+   // 5. Upsert the user's membership to the organisation
+const { error: membershipError } = await supabaseAdmin
+  .from('memberships')
+  .upsert(
+    {
+      user_id: user.id,
+      organization_id: demoOrgId,
+      role: 'org_owner'
+    },
+    // --- THIS IS THE FIX ---
+    // Tells Supabase to ignore the insert if this user/org combo already exists
+    { onConflict: 'user_id, organization_id' } 
+  );
 
     if (membershipError) {
       throw new Error(`Failed to create membership: ${membershipError.message}`);
