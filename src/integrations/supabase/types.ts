@@ -14,16 +14,692 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      balance_snapshots: {
+        Row: {
+          amount: number
+          as_of: string
+          bank_account_id: string | null
+          created_at: string
+          currency: string | null
+          id: string
+          organization_id: string | null
+        }
+        Insert: {
+          amount: number
+          as_of: string
+          bank_account_id?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          organization_id?: string | null
+        }
+        Update: {
+          amount?: number
+          as_of?: string
+          bank_account_id?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          organization_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "balance_snapshots_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "balance_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_accounts: {
+        Row: {
+          account_type: string | null
+          connection_id: string | null
+          created_at: string
+          currency: string | null
+          current_balance: number | null
+          id: string
+          masked_number: string | null
+          name: string
+          organization_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_type?: string | null
+          connection_id?: string | null
+          created_at?: string
+          currency?: string | null
+          current_balance?: number | null
+          id?: string
+          masked_number?: string | null
+          name: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_type?: string | null
+          connection_id?: string | null
+          created_at?: string
+          currency?: string | null
+          current_balance?: number | null
+          id?: string
+          masked_number?: string | null
+          name?: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_accounts_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "bank_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_connections: {
+        Row: {
+          created_at: string
+          credentials_ref: string | null
+          id: string
+          last_sync_at: string | null
+          name: string
+          organization_id: string | null
+          provider: string | null
+          status: Database["public"]["Enums"]["connection_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credentials_ref?: string | null
+          id?: string
+          last_sync_at?: string | null
+          name: string
+          organization_id?: string | null
+          provider?: string | null
+          status?: Database["public"]["Enums"]["connection_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credentials_ref?: string | null
+          id?: string
+          last_sync_at?: string | null
+          name?: string
+          organization_id?: string | null
+          provider?: string | null
+          status?: Database["public"]["Enums"]["connection_status"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          organization_id: string | null
+          parent_id: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          organization_id?: string | null
+          parent_id?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          organization_id?: string | null
+          parent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comments: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          organization_id: string | null
+          text: string
+          thread_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          organization_id?: string | null
+          text: string
+          thread_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          organization_id?: string | null
+          text?: string
+          thread_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forecast_models: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          feature_config: Json | null
+          frequency: string | null
+          horizon_days: number | null
+          id: string
+          method: Database["public"]["Enums"]["forecast_method"] | null
+          name: string
+          organization_id: string | null
+          status: Database["public"]["Enums"]["forecast_status"] | null
+          updated_at: string
+          version: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          feature_config?: Json | null
+          frequency?: string | null
+          horizon_days?: number | null
+          id?: string
+          method?: Database["public"]["Enums"]["forecast_method"] | null
+          name: string
+          organization_id?: string | null
+          status?: Database["public"]["Enums"]["forecast_status"] | null
+          updated_at?: string
+          version?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          feature_config?: Json | null
+          frequency?: string | null
+          horizon_days?: number | null
+          id?: string
+          method?: Database["public"]["Enums"]["forecast_method"] | null
+          name?: string
+          organization_id?: string | null
+          status?: Database["public"]["Enums"]["forecast_status"] | null
+          updated_at?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_models_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_models_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forecast_outputs: {
+        Row: {
+          amount: number
+          bank_account_id: string | null
+          confidence_level: number | null
+          created_at: string
+          currency: string | null
+          date: string
+          id: string
+          lower_bound: number | null
+          organization_id: string | null
+          run_id: string | null
+          upper_bound: number | null
+        }
+        Insert: {
+          amount: number
+          bank_account_id?: string | null
+          confidence_level?: number | null
+          created_at?: string
+          currency?: string | null
+          date: string
+          id?: string
+          lower_bound?: number | null
+          organization_id?: string | null
+          run_id?: string | null
+          upper_bound?: number | null
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string | null
+          confidence_level?: number | null
+          created_at?: string
+          currency?: string | null
+          date?: string
+          id?: string
+          lower_bound?: number | null
+          organization_id?: string | null
+          run_id?: string | null
+          upper_bound?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_outputs_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_outputs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_outputs_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forecast_runs: {
+        Row: {
+          backtest: Json | null
+          confidence: Json | null
+          created_at: string
+          id: string
+          metrics: Json | null
+          model_id: string | null
+          organization_id: string | null
+          ran_at: string
+          ran_by: string | null
+          status: Database["public"]["Enums"]["forecast_status"] | null
+        }
+        Insert: {
+          backtest?: Json | null
+          confidence?: Json | null
+          created_at?: string
+          id?: string
+          metrics?: Json | null
+          model_id?: string | null
+          organization_id?: string | null
+          ran_at?: string
+          ran_by?: string | null
+          status?: Database["public"]["Enums"]["forecast_status"] | null
+        }
+        Update: {
+          backtest?: Json | null
+          confidence?: Json | null
+          created_at?: string
+          id?: string
+          metrics?: Json | null
+          model_id?: string | null
+          organization_id?: string | null
+          ran_at?: string
+          ran_by?: string | null
+          status?: Database["public"]["Enums"]["forecast_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_runs_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_runs_ran_by_fkey"
+            columns: ["ran_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memberships: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          base_currency: string | null
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          base_currency?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          base_currency?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scenarios: {
+        Row: {
+          base_model_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string | null
+          overlays: Json | null
+          updated_at: string
+          version: number | null
+        }
+        Insert: {
+          base_model_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id?: string | null
+          overlays?: Json | null
+          updated_at?: string
+          version?: number | null
+        }
+        Update: {
+          base_model_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string | null
+          overlays?: Json | null
+          updated_at?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scenarios_base_model_id_fkey"
+            columns: ["base_model_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scenarios_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scenarios_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          bank_account_id: string | null
+          category_id: string | null
+          counterparty: string | null
+          created_at: string
+          currency: string | null
+          external_id: string | null
+          id: string
+          is_forecast: boolean | null
+          memo: string | null
+          organization_id: string | null
+          updated_at: string
+          value_date: string
+        }
+        Insert: {
+          amount: number
+          bank_account_id?: string | null
+          category_id?: string | null
+          counterparty?: string | null
+          created_at?: string
+          currency?: string | null
+          external_id?: string | null
+          id?: string
+          is_forecast?: boolean | null
+          memo?: string | null
+          organization_id?: string | null
+          updated_at?: string
+          value_date: string
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string | null
+          category_id?: string | null
+          counterparty?: string | null
+          created_at?: string
+          currency?: string | null
+          external_id?: string | null
+          id?: string
+          is_forecast?: boolean | null
+          memo?: string | null
+          organization_id?: string | null
+          updated_at?: string
+          value_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      user_has_org_access: {
+        Args: { org_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "org_owner"
+        | "admin"
+        | "treasury_manager"
+        | "contributor"
+        | "viewer"
+      connection_status: "connected" | "disconnected" | "error" | "syncing"
+      forecast_method:
+        | "tft"
+        | "lstm"
+        | "nbeats"
+        | "deepar"
+        | "xgboost"
+        | "prophet"
+        | "arima"
+        | "ensemble"
+        | "baseline"
+      forecast_status: "pending" | "running" | "completed" | "failed"
+      task_status: "pending" | "in_progress" | "completed" | "rejected"
+      task_type: "submission" | "approval"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +826,29 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "org_owner",
+        "admin",
+        "treasury_manager",
+        "contributor",
+        "viewer",
+      ],
+      connection_status: ["connected", "disconnected", "error", "syncing"],
+      forecast_method: [
+        "tft",
+        "lstm",
+        "nbeats",
+        "deepar",
+        "xgboost",
+        "prophet",
+        "arima",
+        "ensemble",
+        "baseline",
+      ],
+      forecast_status: ["pending", "running", "completed", "failed"],
+      task_status: ["pending", "in_progress", "completed", "rejected"],
+      task_type: ["submission", "approval"],
+    },
   },
 } as const
