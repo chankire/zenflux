@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, DollarSign, Building2, BarChart3, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import DashboardHeader from '@/components/DashboardHeader';
 
 interface Organization {
   id: string;
@@ -156,32 +157,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur-md">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">Z</span>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">ZenFlux</h1>
-                <p className="text-sm text-muted-foreground">Welcome back, {user?.email}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm">
-                <Users className="w-4 h-4 mr-2" />
-                Invite Team
-              </Button>
-              <Button size="sm">
-                <Building2 className="w-4 h-4 mr-2" />
-                Connect Bank
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main className="container mx-auto px-6 py-8">
         {/* Overview Cards */}

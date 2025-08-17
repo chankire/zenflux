@@ -1,9 +1,30 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const goToDashboard = () => {
+    navigate("/dashboard");
+  };
 
   const navItems = [
     { label: "Features", href: "#features" },
@@ -39,8 +60,36 @@ const Header = () => {
           
           {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" onClick={() => window.location.href = '/auth'}>Sign In</Button>
-            <Button variant="default" onClick={() => window.location.href = '/auth'}>Start Free Trial</Button>
+            {user ? (
+              <>
+                <Button variant="ghost" onClick={goToDashboard}>Dashboard</Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <User className="w-4 h-4 mr-2" />
+                      {user.email}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={goToDashboard}>
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Log Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={() => window.location.href = '/auth'}>Sign In</Button>
+                <Button variant="default" onClick={() => window.location.href = '/auth'}>Start Free Trial</Button>
+              </>
+            )}
           </div>
           
           {/* Mobile Menu Button */}
@@ -71,8 +120,20 @@ const Header = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
-                <Button variant="ghost" className="justify-start" onClick={() => window.location.href = '/auth'}>Sign In</Button>
-                <Button variant="default" className="justify-start" onClick={() => window.location.href = '/auth'}>Start Free Trial</Button>
+                {user ? (
+                  <>
+                    <Button variant="ghost" className="justify-start" onClick={goToDashboard}>Dashboard</Button>
+                    <Button variant="ghost" className="justify-start text-destructive" onClick={handleSignOut}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Log Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" className="justify-start" onClick={() => window.location.href = '/auth'}>Sign In</Button>
+                    <Button variant="default" className="justify-start" onClick={() => window.location.href = '/auth'}>Start Free Trial</Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
