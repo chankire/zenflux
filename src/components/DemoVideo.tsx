@@ -5,7 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { Play, Pause, RotateCcw, TrendingUp, DollarSign, Calendar, Target } from "lucide-react";
+import { Play, Pause, RotateCcw, TrendingUp, DollarSign, Calendar, Target, Video } from "lucide-react";
+import ReactPlayer from "react-player/lazy";
 
 // Demo data for the video
 const generateDemoData = (period: string) => {
@@ -70,6 +71,7 @@ const DemoVideo = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [period, setPeriod] = useState("daily");
   const [activeTab, setActiveTab] = useState("forecast");
+  const [showVideo, setShowVideo] = useState(false);
   const [data, setData] = useState(generateDemoData("daily"));
 
   const steps = [
@@ -129,6 +131,10 @@ const DemoVideo = () => {
             <RotateCcw className="w-4 h-4 mr-2" />
             Reset
           </Button>
+          <Button onClick={() => setShowVideo(!showVideo)} variant="secondary">
+            <Video className="w-4 h-4 mr-2" />
+            {showVideo ? "Hide Video" : "Watch Video"}
+          </Button>
         </div>
 
         {currentStep < steps.length && (
@@ -143,6 +149,31 @@ const DemoVideo = () => {
           </div>
         )}
       </div>
+
+      {showVideo && (
+        <div className="mb-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Video className="w-5 h-5" />
+                Product Demo Video
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="aspect-video w-full rounded-lg overflow-hidden">
+                <ReactPlayer
+                  width="100%"
+                  height="100%"
+                  url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" // Replace with your actual video URL
+                  playing={false}
+                  controls={true}
+                  style={{ borderRadius: '8px', overflow: 'hidden' }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {currentStep >= 2 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
