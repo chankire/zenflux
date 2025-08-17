@@ -28,6 +28,8 @@ const Dashboard = () => {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seedingData, setSeedingData] = useState(false);
+  const [generatingForecast, setGeneratingForecast] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +66,74 @@ const Dashboard = () => {
       fetchData();
     }
   }, [user, toast]);
+
+  const handleSeedDemoData = async () => {
+    setSeedingData(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('seed-demo-data');
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Demo data loaded!',
+        description: 'Sample organization, accounts, and transactions have been created.',
+      });
+      
+      // Refresh the data
+      const { data: orgs } = await supabase.from('organizations').select('*');
+      const { data: accounts } = await supabase.from('bank_accounts').select('*');
+      setOrganizations(orgs || []);
+      setBankAccounts(accounts || []);
+      
+    } catch (error: any) {
+      console.error('Error seeding data:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error loading demo data',
+        description: error.message,
+      });
+    } finally {
+      setSeedingData(false);
+    }
+  };
+
+  const handleGenerateForecast = async () => {
+    if (organizations.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'No organization found',
+        description: 'Please load demo data first or connect to an organization.',
+      });
+      return;
+    }
+
+    setGeneratingForecast(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-forecast', {
+        body: { 
+          modelId: 'default-model',
+          horizon_days: 90 
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Forecast generated!',
+        description: `Generated ${data.forecast?.daily_forecasts?.length || 90}-day cash flow forecast.`,
+      });
+      
+    } catch (error: any) {
+      console.error('Error generating forecast:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error generating forecast',
+        description: error.message,
+      });
+    } finally {
+      setGeneratingForecast(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -236,14 +306,28 @@ const Dashboard = () => {
             <CardDescription>Get started with ZenFlux</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Button 
+                variant="outline" 
+                className="h-20 flex-col"
+                onClick={handleSeedDemoData}
+                disabled={seedingData}
+              >
+                <DollarSign className="w-6 h-6 mb-2" />
+                {seedingData ? 'Loading...' : 'Load Demo Data'}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-20 flex-col"
+                onClick={handleGenerateForecast}
+                disabled={generatingForecast || organizations.length === 0}
+              >
+                <BarChart3 className="w-6 h-6 mb-2" />
+                {generatingForecast ? 'Generating...' : 'Generate Forecast'}
+              </Button>
               <Button variant="outline" className="h-20 flex-col">
                 <Building2 className="w-6 h-6 mb-2" />
                 Connect Bank
-              </Button>
-              <Button variant="outline" className="h-20 flex-col">
-                <BarChart3 className="w-6 h-6 mb-2" />
-                Generate Forecast
               </Button>
               <Button variant="outline" className="h-20 flex-col">
                 <Users className="w-6 h-6 mb-2" />
