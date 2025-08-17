@@ -3,39 +3,23 @@ import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import DemoVideo from "@/components/DemoVideo";
 
 const Hero = () => {
-  const handleWatchDemo = (e?: any) => {
-    try {
-      if (e?.preventDefault) e.preventDefault();
-    } catch {}
-
-    const el = document.getElementById('demo-section');
-    const header = document.querySelector('header') as HTMLElement | null;
-    const headerHeight = header?.offsetHeight ?? 0;
-
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
-      try {
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      } catch {
-        window.scrollTo(0, y);
-      }
-      return;
-    }
-
-    // Fallback: set hash and try again shortly
-    window.location.hash = 'demo-section';
-    setTimeout(() => {
-      const el2 = document.getElementById('demo-section');
-      if (el2) {
-        const y2 = el2.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
-        try {
-          window.scrollTo({ top: y2, behavior: 'smooth' });
-        } catch {
-          window.scrollTo(0, y2);
+  // This is the final, most reliable scroll function.
+  const handleWatchDemo = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    
+    // This combination ensures we wait for the browser to be ready to paint,
+    // and then pushes our scroll logic to the end of the execution queue,
+    // giving the DemoVideo component maximum time to render.
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const demoSection = document.getElementById('demo-section');
+        if (demoSection) {
+          demoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-      }
-    }, 50);
+      }, 0); // A timeout of 0 is enough to defer execution.
+    });
   };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
       {/* Background decorative elements */}
@@ -63,14 +47,14 @@ const Hero = () => {
             and a finance copilot for treasurers
           </p>
           
-          {/* CTAs */}
+          {/* --- THIS IS THE CORRECTED BUTTON --- */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
             <Button variant="hero" size="lg" className="group">
               Start Free Trial
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button asChild variant="outline" size="lg" onClick={handleWatchDemo} aria-controls="demo-section">
-              <a href="#demo-section">Watch Demo</a>
+            <Button variant="outline" size="lg" onClick={handleWatchDemo} aria-controls="demo-section">
+              Watch Demo
             </Button>
           </div>
           
@@ -84,7 +68,7 @@ const Hero = () => {
               <p className="text-muted-foreground text-sm">Advanced ML models with ensemble forecasting</p>
             </div>
             
-            <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover:shadow-glow transition-all duration-300">
+            <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover-shadow-glow transition-all duration-300">
               <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
                 <Shield className="w-6 h-6 text-accent" />
               </div>
@@ -92,7 +76,7 @@ const Hero = () => {
               <p className="text-muted-foreground text-sm">SOC2 compliant with multi-tenant isolation</p>
             </div>
             
-            <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover:shadow-glow transition-all duration-300">
+            <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover-shadow-glow transition-all duration-300">
               <div className="w-12 h-12 bg-primary-glow/20 rounded-lg flex items-center justify-center mb-4">
                 <Zap className="w-6 h-6 text-primary" />
               </div>
