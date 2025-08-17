@@ -12,6 +12,9 @@ serve(async (req) => {
   }
 
   try {
+        // --- ADD THIS LINE ---
+    console.log("--- RUNNING LATEST CORRECTED CODE v2 ---");
+    // --- END OF NEW LINE ---
     // 1. Initialize the Admin client to bypass RLS
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
