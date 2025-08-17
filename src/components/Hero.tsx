@@ -1,15 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import DemoVideo from "@/components/DemoVideo";
-import { useRef } from "react";
 
 const Hero = () => {
-  const demoVideoRef = useRef(null);
-
   const handleWatchDemo = () => {
-    console.log('Watch Demo clicked - Hero');
+    console.log('Watch Demo clicked');
     
-    // Scroll to demo section first
     const demoSection = document.getElementById('demo-section');
     if (demoSection) {
       const header = document.querySelector('header');
@@ -24,16 +20,11 @@ const Hero = () => {
       });
     }
 
-    // Directly call the demo start method after scrolling
+    // After scrolling, dispatch a global event to start the demo.
+    // This is far more reliable than passing props.
     setTimeout(() => {
-      console.log('Attempting to start demo...');
-      if (demoVideoRef.current && typeof demoVideoRef.current.startDemoFromHero === 'function') {
-        console.log('Calling startDemoFromHero method');
-        demoVideoRef.current.startDemoFromHero();
-      } else {
-        console.log('startDemoFromHero method not found on ref');
-      }
-    }, 800);
+      window.dispatchEvent(new CustomEvent('start-zenflux-demo'));
+    }, 800); // Wait for scroll to finish
   };
 
   return (
@@ -69,9 +60,9 @@ const Hero = () => {
               Start Free Trial
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
+            <Button  
+              variant="outline"  
+              size="lg"  
               onClick={handleWatchDemo}
               className="group"
               type="button"
@@ -110,7 +101,7 @@ const Hero = () => {
           
           {/* Interactive Demo */}
           <div id="demo-section" className="relative scroll-mt-24">
-            <DemoVideo ref={demoVideoRef} />
+            <DemoVideo />
           </div>
         </div>
       </div>
