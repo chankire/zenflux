@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import DemoVideo from "@/components/DemoVideo";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 const Hero = () => {
-  const [triggerDemo, setTriggerDemo] = useState(false);
+  const demoVideoRef = useRef(null);
 
   const handleWatchDemo = () => {
-    console.log('Watch Demo clicked');
+    console.log('Watch Demo clicked - Hero');
     
     // Scroll to demo section first
     const demoSection = document.getElementById('demo-section');
@@ -24,11 +24,15 @@ const Hero = () => {
       });
     }
 
-    // Trigger the demo after scrolling
+    // Directly call the demo start method after scrolling
     setTimeout(() => {
-      setTriggerDemo(true);
-      // Reset trigger after a short delay to allow re-triggering
-      setTimeout(() => setTriggerDemo(false), 100);
+      console.log('Attempting to start demo...');
+      if (demoVideoRef.current && typeof demoVideoRef.current.startDemoFromHero === 'function') {
+        console.log('Calling startDemoFromHero method');
+        demoVideoRef.current.startDemoFromHero();
+      } else {
+        console.log('startDemoFromHero method not found on ref');
+      }
     }, 800);
   };
 
@@ -106,7 +110,7 @@ const Hero = () => {
           
           {/* Interactive Demo */}
           <div id="demo-section" className="relative scroll-mt-24">
-            <DemoVideo triggerDemo={triggerDemo} />
+            <DemoVideo ref={demoVideoRef} />
           </div>
         </div>
       </div>
