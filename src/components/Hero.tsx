@@ -4,12 +4,24 @@ import DemoVideo from "@/components/DemoVideo";
 
 const Hero = () => {
   const handleWatchDemo = () => {
-    const demoSection = document.getElementById('demo-section');
-    if (demoSection) {
-      demoSection.scrollIntoView({ behavior: 'smooth' });
+    const scrollToDemo = () => {
+      const el = document.getElementById('demo-section');
+      if (el) {
+        try {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch {
+          el.scrollIntoView();
+        }
+        return true;
+      }
+      return false;
+    };
+
+    if (!scrollToDemo()) {
+      window.location.hash = 'demo-section';
+      setTimeout(scrollToDemo, 100);
     }
   };
-
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
       {/* Background decorative elements */}
@@ -43,8 +55,8 @@ const Hero = () => {
               Start Free Trial
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button variant="outline" size="lg" onClick={handleWatchDemo}>
-              Watch Demo
+            <Button asChild variant="outline" size="lg" onClick={handleWatchDemo} aria-controls="demo-section">
+              <a href="#demo-section">Watch Demo</a>
             </Button>
           </div>
           
