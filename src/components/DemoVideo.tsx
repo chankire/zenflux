@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { Play, Pause, RotateCcw, TrendingUp, DollarSign, Calendar, Target, Video, BarChart3, Calculator } from "lucide-react";
-import ReactPlayer from "react-player/lazy";
+// Using native video instead of react-player to avoid dynamic import issues
 import { format, addDays, addWeeks, addMonths, addQuarters } from "date-fns";
 import { useCurrency } from "@/hooks/useCurrency";
 
@@ -268,35 +268,16 @@ const DemoVideo = ({ triggerDemo = false }: DemoVideoProps) => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="aspect-video w-full rounded-lg overflow-hidden">
-                <ReactPlayer
+              <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/50 flex items-center justify-center">
+                <iframe
                   width="100%"
                   height="100%"
-                  url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" // Replace with your actual video URL
-                  playing={videoPlaying}
-                  controls={true}
-                  muted={true} // Required for autoplay in modern browsers
-                  style={{ borderRadius: '8px', overflow: 'hidden' }}
-                  onReady={() => {
-                    console.log('ReactPlayer ready');
-                  }}
-                  onPlay={() => {
-                    console.log('Video started playing');
-                    setVideoPlaying(true);
-                  }}
-                  onPause={() => {
-                    console.log('Video paused');
-                    setVideoPlaying(false);
-                  }}
-                  config={{
-                    youtube: {
-                      playerVars: {
-                        autoplay: 1,
-                        mute: 1,
-                        controls: 1,
-                      }
-                    }
-                  }}
+                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1&controls=1"
+                  title="ZenFlux Demo Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="rounded-lg"
                 />
               </div>
             </CardContent>
