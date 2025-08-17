@@ -17,17 +17,24 @@ serve(async (req) => {
 
   try {
     console.log('Generate forecast function called');
-    
-    // Create Supabase client
-    const supabaseClient = createClient(
+
+    // --- 👇 FIX PART 1: Create TWO clients ---
+    // 1. A client with the user's permissions, just to authenticate them.
+    const supabaseAuthClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    // Get the user from the request
+    // 2. A powerful admin client to perform all database actions.
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Get the user from the request using the auth client
     const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data } = await supabaseAuthClient.auth.getUser(token);
     const user = data.user;
 
     if (!user) {
@@ -37,8 +44,9 @@ serve(async (req) => {
     const { modelId, horizon_days = 90 } = await req.json();
     console.log('Generating forecast for model:', modelId, 'horizon:', horizon_days);
 
+    // --- 👇 FIX PART 2: Use the ADMIN client for all database queries ---
     // Get user's organization to scope the forecast
-    const { data: memberships } = await supabaseClient
+    const { data: memberships } = await supabaseAdmin
       .from('memberships')
       .select('organization_id')
       .eq('user_id', user.id)
@@ -51,14 +59,14 @@ serve(async (req) => {
     const organizationId = memberships[0].organization_id;
 
     // Fetch historical transaction data for AI analysis
-    const { data: transactions } = await supabaseClient
+    const { data: transactions } = await supabaseAdmin
       .from('transactions')
       .select('*')
       .eq('organization_id', organizationId)
       .order('value_date', { ascending: false })
       .limit(1000);
 
-    const { data: bankAccounts } = await supabaseClient
+    const { data: bankAccounts } = await supabaseAdmin
       .from('bank_accounts')
       .select('*')
       .eq('organization_id', organizationId);
@@ -133,7 +141,7 @@ Return ONLY a JSON object with this structure:
     console.log('AI forecast generated successfully');
 
     // Create forecast run record
-    const { data: forecastRun, error: runError } = await supabaseClient
+    const { data: forecastRun, error: runError } = await supabaseAdmin
       .from('forecast_runs')
       .insert({
         organization_id: organizationId,
@@ -169,7 +177,7 @@ Return ONLY a JSON object with this structure:
       confidence_level: forecast.confidence
     }));
 
-    const { error: outputError } = await supabaseClient
+    const { error: outputError } = await supabaseAdmin
       .from('forecast_outputs')
       .insert(forecastOutputs);
 
