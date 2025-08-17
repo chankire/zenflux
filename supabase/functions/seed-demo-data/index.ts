@@ -1,145 +1,270 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// Test script for validating the demo data seeding function
+// This can be run as a separate function or integrated into your test suite
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface TestResult {
+  test: string;
+  passed: boolean;
+  error?: string;
+  data?: any;
+}
 
-serve(async (req) => {
+export async function validateDemoDataSeeding(authToken: string): Promise<TestResult[]> {
+  const results: TestResult[] = [];
+  
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
+
+  // Get user from token
+  const { data: { user }, error: authError } = await supabase.auth.getUser(authToken.replace('Bearer ', ''));
+  
+  if (authError || !user) {
+    results.push({
+      test: 'User Authentication',
+      passed: false,
+      error: 'Failed to authenticate user'
+    });
+    return results;
+  }
+
+  const demoOrgId = '123e4567-e89b-12d3-a456-426614174000';
+
+  // Test 1: Verify user profile exists
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    results.push({
+      test: 'User Profile Exists',
+      passed: !error && !!profile,
+      error: error?.message,
+      data: profile ? { id: profile.id, email: profile.email } : null
+    });
+  } catch (error: any) {
+    results.push({
+      test: 'User Profile Exists',
+      passed: false,
+      error: error.message
+    });
+  }
+
+  // Test 2: Verify organization exists
+  try {
+    const { data: org, error } = await supabase
+      .from('organizations')
+      .select('*')
+      .eq('id', demoOrgId)
+      .single();
+
+    results.push({
+      test: 'Demo Organization Exists',
+      passed: !error && !!org,
+      error: error?.message,
+      data: org ? { id: org.id, name: org.name } : null
+    });
+  } catch (error: any) {
+    results.push({
+      test: 'Demo Organization Exists',
+      passed: false,
+      error: error.message
+    });
+  }
+
+  // Test 3: Verify membership exists
+  try {
+    const { data: membership, error } = await supabase
+      .from('memberships')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('organization_id', demoOrgId)
+      .single();
+
+    results.push({
+      test: 'User Membership Exists',
+      passed: !error && !!membership,
+      error: error?.message,
+      data: membership ? { role: membership.role } : null
+    });
+  } catch (error: any) {
+    results.push({
+      test: 'User Membership Exists',
+      passed: false,
+      error: error.message
+    });
+  }
+
+  // Test 4: Verify bank connections exist
+  try {
+    const { data: connections, error } = await supabase
+      .from('bank_connections')
+      .select('*')
+      .eq('organization_id', demoOrgId);
+
+    results.push({
+      test: 'Bank Connections Exist',
+      passed: !error && connections && connections.length > 0,
+      error: error?.message,
+      data: connections ? { count: connections.length } : null
+    });
+  } catch (error: any) {
+    results.push({
+      test: 'Bank Connections Exist',
+      passed: false,
+      error: error.message
+    });
+  }
+
+  // Test 5: Verify bank accounts exist
+  try {
+    const { data: accounts, error } = await supabase
+      .from('bank_accounts')
+      .select('*')
+      .eq('organization_id', demoOrgId);
+
+    results.push({
+      test: 'Bank Accounts Exist',
+      passed: !error && accounts && accounts.length >= 2,
+      error: error?.message,
+      data: accounts ? { count: accounts.length, accounts: accounts.map(a => ({ name: a.name, balance: a.current_balance })) } : null
+    });
+  } catch (error: any) {
+    results.push({
+      test: 'Bank Accounts Exist',
+      passed: false,
+      error: error.message
+    });
+  }
+
+  // Test 6: Verify transactions exist
+  try {
+    const { data: transactions, error } = await supabase
+      .from('transactions')
+      .select('count')
+      .eq('organization_id', demoOrgId);
+
+    const count = transactions?.[0]?.count || 0;
+    
+    results.push({
+      test: 'Sample Transactions Exist',
+      passed: !error && count > 0,
+      error: error?.message,
+      data: { count }
+    });
+  } catch (error: any) {
+    results.push({
+      test: 'Sample Transactions Exist',
+      passed: false,
+      error: error.message
+    });
+  }
+
+  // Test 7: Verify data integrity (foreign key relationships)
+  try {
+    const { data: integrityCheck, error } = await supabase
+      .from('transactions')
+      .select(`
+        id,
+        bank_accounts!inner(
+          id,
+          name,
+          organizations!inner(
+            id,
+            name
+          )
+        )
+      `)
+      .eq('organization_id', demoOrgId)
+      .limit(5);
+
+    results.push({
+      test: 'Data Integrity Check',
+      passed: !error && integrityCheck && integrityCheck.length > 0,
+      error: error?.message,
+      data: integrityCheck ? { samplesChecked: integrityCheck.length } : null
+    });
+  } catch (error: any) {
+    results.push({
+      test: 'Data Integrity Check',
+      passed: false,
+      error: error.message
+    });
+  }
+
+  return results;
+}
+
+// Edge function for testing the demo seeding
+export const testDemoSeeding = async (req: Request) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-        // --- ADD THIS LINE ---
-    console.log("--- RUNNING LATEST CORRECTED CODE v2 ---");
-    // --- END OF NEW LINE ---
-    // 1. Initialize the Admin client to bypass RLS
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // 2. Get the authenticated user from the request
-    const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user } } = await supabaseAdmin.auth.getUser(token);
-
-    if (!user) {
-      throw new Error('User not authenticated');
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Authorization header required');
     }
-    console.log('Authenticated user:', user.id);
 
-    // 3. --- FIX --- Ensure the user profile exists before doing anything else.
-    // This single 'upsert' will create the profile if it's missing or do nothing if it exists.
-    const { error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .upsert({
-        id: user.id,
-        email: user.email!,
-        first_name: user.user_metadata?.first_name || 'Demo',
-        last_name: user.user_metadata?.last_name || 'User'
-      });
+    const results = await validateDemoDataSeeding(authHeader);
+    const allPassed = results.every(r => r.passed);
+    const summary = {
+      allTestsPassed: allPassed,
+      totalTests: results.length,
+      passedTests: results.filter(r => r.passed).length,
+      failedTests: results.filter(r => !r.passed).length
+    };
 
-    // If this fails, stop immediately.
-    if (profileError) {
-      console.error('Error ensuring user profile:', profileError);
-      throw new Error(`Failed to create user profile: ${profileError.message}`);
-    }
-    console.log('User profile ensured for:', user.id);
-
-    // 4. Upsert the Demo Organisation
-    const demoOrgId = '123e4567-e89b-12d3-a456-426614174000';
-    const { error: orgError } = await supabaseAdmin
-      .from('organizations')
-      .upsert({
-        id: demoOrgId,
-        name: 'Demo Organisation',
-        slug: 'demo-org',
-        base_currency: 'USD'
-      });
-
-    if (orgError) {
-      throw new Error(`Failed to ensure demo organization: ${orgError.message}`);
-    }
-    console.log('Demo organization ensured.');
-
-   // 5. Upsert the user's membership to the organisation
-const { error: membershipError } = await supabaseAdmin
-  .from('memberships')
-  .upsert(
-    {
-      user_id: user.id,
-      organization_id: demoOrgId,
-      role: 'org_owner'
-    },
-    // --- THIS IS THE FIX ---
-    // Tells Supabase to ignore the insert if this user/org combo already exists
-    { onConflict: 'user_id, organization_id' } 
-  );
-
-    if (membershipError) {
-      throw new Error(`Failed to create membership: ${membershipError.message}`);
-    }
-    console.log('Membership ensured.');
-
-    // 6. Create sample bank connections and accounts (simplified)
-    const { data: connection } = await supabaseAdmin
-      .from('bank_connections')
-      .upsert({
-        organization_id: demoOrgId,
-        name: 'Demo Bank Connection',
-        provider: 'demo',
-        status: 'connected'
-      })
-      .select()
-      .single();
-
-    const bankAccounts = [
-      { organization_id: demoOrgId, connection_id: connection.id, name: 'Business Checking', currency: 'USD', masked_number: '****1234', account_type: 'checking', current_balance: 125000.00 },
-      { organization_id: demoOrgId, connection_id: connection.id, name: 'Savings Account', currency: 'USD', masked_number: '****5678', account_type: 'savings', current_balance: 75000.00 }
-    ];
-    const { data: accounts, error: accountsError } = await supabaseAdmin.from('bank_accounts').upsert(bankAccounts).select();
-    if (accountsError) throw accountsError;
-
-    // 7. Generate and insert sample transactions
-    const transactions = [];
-    const baseDate = new Date();
-    baseDate.setDate(baseDate.getDate() - 90);
-    for (let i = 0; i < 90; i++) {
-        const date = new Date(baseDate);
-        date.setDate(date.getDate() + i);
-        const transactionsPerDay = Math.floor(Math.random() * 4) + 2;
-        for (let j = 0; j < transactionsPerDay; j++) {
-            const isInflow = Math.random() > 0.6;
-            const amount = isInflow ? Math.floor(Math.random() * 15000) + 1000 : -(Math.floor(Math.random() * 8000) + 500);
-            const counterparties = isInflow ? ['Client Payment', 'Contract Revenue', 'Service Fee'] : ['Office Rent', 'Payroll', 'Utilities', 'Marketing Spend'];
-            transactions.push({
-                organization_id: demoOrgId,
-                bank_account_id: accounts[Math.floor(Math.random() * accounts.length)].id,
-                value_date: date.toISOString().split('T')[0],
-                amount: amount,
-                currency: 'USD',
-                counterparty: counterparties[Math.floor(Math.random() * counterparties.length)],
-                memo: `${isInflow ? 'Payment' : 'Expense'}`,
-                is_forecast: false
-            });
-        }
-    }
-    const { error: transactionsError } = await supabaseAdmin.from('transactions').upsert(transactions);
-    if (transactionsError) throw transactionsError;
-
-    console.log('Demo data seeded successfully.');
-    return new Response(JSON.stringify({ success: true, message: 'Demo data seeded successfully' }), {
+    return new Response(JSON.stringify({
+      success: true,
+      summary,
+      results
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: allPassed ? 200 : 422
     });
 
   } catch (error: any) {
-    console.error('Critical error in demo data seeding:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Test validation error:', error);
+    return new Response(JSON.stringify({
+      error: error.message,
+      success: false
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-});
+};
+
+// Manual cleanup function (use with caution in development)
+export const cleanupDemoData = async (authToken: string, organizationId: string = '123e4567-e89b-12d3-a456-426614174000') => {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
+
+  const { data: { user } } = await supabase.auth.getUser(authToken.replace('Bearer ', ''));
+  
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Delete in correct order to respect foreign key constraints
+  await supabase.from('transactions').delete().eq('organization_id', organizationId);
+  await supabase.from('bank_accounts').delete().eq('organization_id', organizationId);
+  await supabase.from('bank_connections').delete().eq('organization_id', organizationId);
+  await supabase.from('memberships').delete().eq('user_id', user.id).eq('organization_id', organizationId);
+  // Note: We don't delete the organization or profile as they might be shared
+
+  console.log('Demo data cleaned up successfully');
+};
