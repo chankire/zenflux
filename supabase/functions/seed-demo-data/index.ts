@@ -47,25 +47,39 @@ serve(async (req) => {
         last_name: user.user_metadata?.last_name || 'User'
       });
 
-    if (profileError && !profileError.message.includes('duplicate')) {
-      console.error('Profile error:', profileError);
-      // Don't throw here, just log
+    if (profileError) {
+      console.error('Profile upsert error:', profileError);
+      // Continue anyway since profile might already exist
     }
 
-    // Add user to demo organization
-    const { error: membershipError } = await supabase
-      .from('memberships')
-      .upsert({
-        user_id: user.id,
-        organization_id: demoOrgId,
-        role: 'org_owner'
-      });
+    console.log('User profile ensured, proceeding with membership...');
 
-    if (membershipError) {
-      console.error('Membership error:', membershipError);
-      if (!membershipError.message.includes('duplicate')) {
-        throw membershipError;
+    // Add user to demo organization with better error handling
+    console.log('Creating membership for user:', user.id, 'org:', demoOrgId);
+    
+    const { data: existingMembership } = await supabase
+      .from('memberships')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('organization_id', demoOrgId)
+      .maybeSingle();
+
+    if (!existingMembership) {
+      const { error: membershipError } = await supabase
+        .from('memberships')
+        .insert({
+          user_id: user.id,
+          organization_id: demoOrgId,
+          role: 'org_owner'
+        });
+
+      if (membershipError) {
+        console.error('Membership error:', membershipError);
+        throw new Error(`Failed to create membership: ${membershipError.message}`);
       }
+      console.log('Membership created successfully');
+    } else {
+      console.log('Membership already exists');
     }
 
     // Create sample bank connections and accounts
