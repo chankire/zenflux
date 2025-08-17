@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -125,7 +125,7 @@ const chartConfig = {
   Travel: { label: "Travel", color: "hsl(0, 84%, 60%)" },
 };
 
-const DemoVideo = forwardRef((props, ref) => {
+const DemoVideo = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [period, setPeriod] = useState("daily");
@@ -144,35 +144,14 @@ const DemoVideo = forwardRef((props, ref) => {
     "Complete - Interactive dashboard ready!"
   ];
 
-  // Expose methods to parent component via ref
-  useImperativeHandle(ref, () => ({
-    startDemoFromHero: () => {
-      console.log('startDemoFromHero called - DemoVideo');
-      setCurrentStep(0);
-      setIsPlaying(true);
-      console.log('Demo state set - isPlaying: true, currentStep: 0');
-    },
-    resetDemo: () => {
-      console.log('resetDemo called via ref');
-      setCurrentStep(0);
-      setIsPlaying(false);
-      setVideoPlaying(false);
-    }
-  }));
-
   useEffect(() => {
-    console.log('Demo useEffect triggered - isPlaying:', isPlaying, 'currentStep:', currentStep);
+    console.log('Demo effect - isPlaying:', isPlaying, 'currentStep:', currentStep);
     let interval: NodeJS.Timeout;
     if (isPlaying && currentStep < steps.length - 1) {
-      console.log('Starting demo interval');
       interval = setInterval(() => {
-        setCurrentStep(prev => {
-          console.log('Step advancing from', prev, 'to', prev + 1);
-          return prev + 1;
-        });
+        setCurrentStep(prev => prev + 1);
       }, 1500);
     } else if (currentStep >= steps.length - 1) {
-      console.log('Demo completed');
       setIsPlaying(false);
     }
     return () => {
@@ -185,15 +164,18 @@ const DemoVideo = forwardRef((props, ref) => {
   }, [period]);
 
   const resetDemo = () => {
-    console.log('Manual reset demo');
     setCurrentStep(0);
     setIsPlaying(false);
     setVideoPlaying(false);
   };
 
   const startDemo = () => {
-    console.log('Manual start demo - current isPlaying:', isPlaying);
+    console.log('Start Demo button clicked! Current isPlaying:', isPlaying);
     setIsPlaying(!isPlaying);
+    if (!isPlaying) {
+      console.log('Starting demo animation...');
+      setCurrentStep(0);
+    }
   };
 
   const toggleVideo = () => {
@@ -240,6 +222,7 @@ const DemoVideo = forwardRef((props, ref) => {
             onClick={startDemo}
             disabled={currentStep >= steps.length - 1 && !isPlaying}
             className="bg-gradient-primary hover:opacity-90"
+            data-demo-start="true"
           >
             {isPlaying ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
             {isPlaying ? "Pause Demo" : "Start Demo"}
@@ -644,8 +627,6 @@ const DemoVideo = forwardRef((props, ref) => {
       )}
     </div>
   );
-});
-
-DemoVideo.displayName = 'DemoVideo';
+};
 
 export default DemoVideo;
