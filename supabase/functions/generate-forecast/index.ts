@@ -44,7 +44,7 @@ serve(async (req) => {
     const { modelId, horizon_days = 90 } = await req.json();
     console.log('Generating forecast for model:', modelId, 'horizon:', horizon_days);
 
-    // --- FIX PART 2: Use the ADMIN client for all database queries ---
+    // ---  FIX PART 2: Use the ADMIN client for all database queries ---
     // Get user's organization to scope the forecast
     const { data: memberships } = await supabaseAdmin
       .from('memberships')
@@ -120,15 +120,15 @@ Return ONLY a JSON object with this structure:
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a financial forecasting expert. Always respond with valid JSON only.' },
-          { role: 'user', content: aiPrompt }
-        ],
-        max_tokens: 4000,
-        temperature: 0.1,
-      }),
+  body: JSON.stringify({
+    model: 'gpt-4o-mini',
+    response_format: { type: "json_object" }, // <-- Add this line
+    messages: [
+      // ...
+    ],
+    max_tokens: 4000,
+    temperature: 0.1,
+  }),
     });
 
     if (!response.ok) {
@@ -136,14 +136,7 @@ Return ONLY a JSON object with this structure:
     }
 
     const aiResult = await response.json();
-    // ---  THIS IS THE FIX ---
-    // The AI can sometimes wrap its response in a markdown block. This code extracts the raw JSON.
-    const rawContent = aiResult.choices[0].message.content;
-    const jsonMatch = rawContent.match(/{[\s\S]*}/);
-    if (!jsonMatch) {
-      throw new Error("AI did not return valid JSON content.");
-    }
-    const forecastData = JSON.parse(jsonMatch[0]);
+    const forecastData = JSON.parse(aiResult.choices[0].message.content);
 
     console.log('AI forecast generated successfully');
 
