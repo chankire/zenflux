@@ -49,10 +49,52 @@ serve(async (req) => {
 
     if (profileError) {
       console.error('Profile upsert error:', profileError);
-      // Continue anyway since profile might already exist
+      // Continue to verify presence and attempt a direct insert if needed
+    }
+
+    // Verify profile exists, fallback to insert if missing
+    const { data: profileRow, error: profileFetchError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileFetchError) {
+      console.error('Profile fetch error after upsert:', profileFetchError);
+    }
+
+    if (!profileRow) {
+      console.log('Profile not found after upsert, attempting insert...');
+      const { error: profileInsertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          email: user.email!,
+          first_name: user.user_metadata?.first_name || 'Demo',
+          last_name: user.user_metadata?.last_name || 'User'
+        });
+      if (profileInsertError) {
+        console.error('Profile insert fallback failed:', profileInsertError);
+        throw new Error(`Failed to ensure profile: ${profileInsertError.message}`);
+      }
     }
 
     console.log('User profile ensured, proceeding with membership...');
+
+    // Ensure demo organization exists before creating membership
+    console.log('Ensuring demo organization exists:', demoOrgId);
+    const { error: orgError } = await supabase
+      .from('organizations')
+      .upsert({
+        id: demoOrgId,
+        name: 'Demo Organization',
+        slug: 'demo-org',
+        base_currency: 'USD'
+      });
+    if (orgError) {
+      console.error('Organization upsert error:', orgError);
+      throw new Error(`Failed to ensure demo organization: ${orgError.message}`);
+    }
 
     // Add user to demo organization with better error handling
     console.log('Creating membership for user:', user.id, 'org:', demoOrgId);
