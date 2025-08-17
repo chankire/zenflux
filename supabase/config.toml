@@ -1,7 +1,7 @@
 project_id = "hobkkvojjzrbkgcuqfgo"
 
 [functions.generate-forecast]
-verify_jwt = true
+verify_jwt = false
 
 [functions.seed-demo-data]
-verify_jwt = true
+verify_jwt = false
