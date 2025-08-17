@@ -79,6 +79,20 @@ serve(async (req) => {
       }
     }
 
+    // Final verification that profile exists before proceeding
+    const { data: verifyProfile, error: verifyErr } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (verifyErr) {
+      console.error('Profile verify error:', verifyErr);
+    }
+    if (!verifyProfile) {
+      throw new Error('Profile not found after ensure step; aborting membership creation');
+    }
+    console.log('Profile verified for user:', user.id);
+
     console.log('User profile ensured, proceeding with membership...');
 
     // Ensure demo organization exists before creating membership
@@ -105,6 +119,8 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .eq('organization_id', demoOrgId)
       .maybeSingle();
+
+    console.log('Existing membership check:', existingMembership ? 'found' : 'none');
 
     if (!existingMembership) {
       const { error: membershipError } = await supabase
