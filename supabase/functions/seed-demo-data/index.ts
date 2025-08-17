@@ -97,8 +97,9 @@ const { error: membershipError } = await supabaseAdmin
       .single();
 
     const bankAccounts = [
-      { organization_id: demoOrgId, connection_id: connection.id, name: 'Business Checking', currency: 'USD', masked_number: '****1234', account_type: 'checking', current_balance: 125000.00 },
-      { organization_id: demoOrgId, connection_id: connection.id, name: 'Savings Account', currency: 'USD', masked_number: '****5678', account_type: 'savings', current_balance: 75000.00 }
+      { organization_id: demoOrgId, connection_id: connection.id, name: 'Business Current Account', currency: 'USD', masked_number: '****1234', account_type: 'current', current_balance: 125000.00 },
+      { organization_id: demoOrgId, connection_id: connection.id, name: 'Business Savings Account', currency: 'USD', masked_number: '****5678', account_type: 'savings', current_balance: 75000.00 },
+      { organization_id: demoOrgId, connection_id: connection.id, name: 'Investment Portfolio', currency: 'USD', masked_number: '****9012', account_type: 'investment', current_balance: 250000.00 }
     ];
     const { data: accounts, error: accountsError } = await supabaseAdmin.from('bank_accounts').upsert(bankAccounts).select();
     if (accountsError) throw accountsError;
