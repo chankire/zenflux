@@ -153,12 +153,10 @@ const DemoVideo = ({ triggerDemo = false }: DemoVideoProps) => {
   useEffect(() => {
     if (triggerDemo) {
       console.log('Demo triggered from Hero');
-      // Reset and start the demo
+      // Reset and start the interactive demo only
       setCurrentStep(0);
       setIsPlaying(true);
-      // Also show and play the video
-      setShowVideo(true);
-      setVideoPlaying(true);
+      // Don't auto-show or auto-play the video
     }
   }, [triggerDemo]);
 
@@ -186,11 +184,7 @@ const DemoVideo = ({ triggerDemo = false }: DemoVideoProps) => {
 
   const startDemo = () => {
     setIsPlaying(!isPlaying);
-    if (!isPlaying) {
-      // If starting demo, also show and play video
-      setShowVideo(true);
-      setVideoPlaying(true);
-    }
+    // Don't auto-show video when starting demo
   };
 
   const toggleVideo = () => {
