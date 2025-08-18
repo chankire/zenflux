@@ -13,6 +13,34 @@ import { useCurrency } from "@/hooks/useCurrency";
 
 export type DemoVideoHandle = { startDemoFromHero: () => void };
 
+/* ---------- demo/config data that your charts/tables need ---------- */
+
+const transactionData = [
+  { id: 1, date: "2025-08-15", description: "Client Payment - ABC Corp", amount: 45000, category: "Revenue", type: "inflow" },
+  { id: 2, date: "2025-08-14", description: "Office Rent", amount: -8500, category: "Operations", type: "outflow" },
+  { id: 3, date: "2025-08-14", description: "Marketing Campaign", amount: -3200, category: "Marketing", type: "outflow" },
+  { id: 4, date: "2025-08-13", description: "Payroll Processing", amount: -22000, category: "Payroll", type: "outflow" },
+  { id: 5, date: "2025-08-12", description: "Software Subscriptions", amount: -1200, category: "Operations", type: "outflow" },
+  { id: 6, date: "2025-08-11", description: "Client Payment - XYZ Ltd", amount: 32000, category: "Revenue", type: "inflow" },
+  { id: 7, date: "2025-08-10", description: "Travel Expenses", amount: -2800, category: "Travel", type: "outflow" },
+  { id: 8, date: "2025-08-09", description: "Conference Tickets", amount: -1500, category: "Marketing", type: "outflow" },
+];
+
+const chartConfig = {
+  balance: { label: "Cash Balance", color: "hsl(214, 84%, 56%)" },
+  actualBalance: { label: "Actual Balance", color: "hsl(214, 84%, 56%)" },
+  forecastBalance: { label: "Forecast Balance", color: "hsl(280, 84%, 56%)" },
+  workingCapital: { label: "Working Capital", color: "hsl(143, 64%, 24%)" },
+  confidence: { label: "Confidence", color: "hsl(143, 64%, 24%)" },
+  Revenue: { label: "Revenue", color: "hsl(214, 84%, 56%)" },
+  Operations: { label: "Operations", color: "hsl(143, 64%, 24%)" },
+  Marketing: { label: "Marketing", color: "hsl(280, 84%, 56%)" },
+  Payroll: { label: "Payroll", color: "hsl(35, 84%, 56%)" },
+  Travel: { label: "Travel", color: "hsl(0, 84%, 60%)" },
+};
+
+/* ---------- helpers to build demo time-series ---------- */
+
 const formatDateForPeriod = (date: Date, period: string) => {
   switch (period) {
     case "weekly": return format(date, "MMM dd");
@@ -57,6 +85,8 @@ const generateDemoData = (period: string) => {
   }
   return data;
 };
+
+/* ---------- component ---------- */
 
 const DemoVideo = forwardRef<DemoVideoHandle, {}>((props, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -159,10 +189,312 @@ const DemoVideo = forwardRef<DemoVideoHandle, {}>((props, ref) => {
             </div>
           </div>
         )}
+
+        {/* Small dev helper (shows only in dev) */}
+        {import.meta.env.DEV && (
+          <div className="mt-3 text-xs text-muted-foreground text-center">
+            step: <b>{currentStep}</b> &nbsp; playing: <b>{String(isPlaying)}</b>
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-3"
+              onClick={() => {
+                setCurrentStep(steps.length - 1);
+                setIsPlaying(false);
+              }}
+            >
+              Force Show Charts
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* …rest of your tabs/charts exactly as before… */}
-      {/* Keep your existing content here */}
+      {/* KPI cards appear once step >= 2 */}
+      {currentStep >= 2 && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Current Balance</p>
+                  <p className="text-xl font-bold text-foreground">{formatCurrency(currentBalance)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="text-sm text-muted-foreground">90-Day Forecast</p>
+                  <p className="text-xl font-bold text-foreground">{formatCurrency(forecastBalance)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Accuracy</p>
+                  <p className="text-xl font-bold text-foreground">99.2%</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Period</p>
+                  <Select value={period} onValueChange={setPeriod}>
+                    <SelectTrigger className="w-full mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="quarterly">Quarterly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Tabs/charts appear once step >= 4 */}
+      {currentStep >= 4 && (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="forecast">Cash Flow Forecast</TabsTrigger>
+            <TabsTrigger value="categories">Category Analysis</TabsTrigger>
+            <TabsTrigger value="working-capital">Working Capital</TabsTrigger>
+            <TabsTrigger value="accuracy">Forecast Accuracy</TabsTrigger>
+            <TabsTrigger value="transactions">Transaction Details</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="forecast" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Cash Flow Forecast - 1.5 Years (Actuals vs Forecasts)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="formattedDate" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} interval="preserveStartEnd" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={formatCurrency} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Line type="monotone" dataKey="actualBalance" stroke={chartConfig.actualBalance.color} strokeWidth={3} dot={{ fill: chartConfig.actualBalance.color, strokeWidth: 2, r: 3 }} connectNulls={false} />
+                      <Line type="monotone" dataKey="forecastBalance" stroke={chartConfig.forecastBalance.color} strokeWidth={2} strokeDasharray="5 5" dot={{ fill: chartConfig.forecastBalance.color, strokeWidth: 2, r: 2 }} connectNulls={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="categories" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Cash Flow by Category</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data.slice(0, Math.floor(data.length / 3))}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="formattedDate" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} interval="preserveStartEnd" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={formatCurrency} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar dataKey="Revenue" fill={chartConfig.Revenue.color} />
+                      <Bar dataKey="Operations" fill={chartConfig.Operations.color} />
+                      <Bar dataKey="Marketing" fill={chartConfig.Marketing.color} />
+                      <Bar dataKey="Payroll" fill={chartConfig.Payroll.color} />
+                      <Bar dataKey="Travel" fill={chartConfig.Travel.color} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="working-capital" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2">
+                    <Calculator className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Current Ratio</p>
+                      <p className="text-xl font-bold text-foreground">
+                        {(data[data.length - 1]?.currentRatio || 1.2).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-accent" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Quick Ratio</p>
+                      <p className="text-xl font-bold text-foreground">
+                        {(data[data.length - 1]?.quickRatio || 0.8).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Working Capital</p>
+                      <p className="text-xl font-bold text-foreground">
+                        {formatCurrency(data[data.length - 1]?.workingCapital || 25000)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Working Capital Trend
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="formattedDate" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} interval="preserveStartEnd" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={formatCurrency} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Line type="monotone" dataKey="workingCapital" stroke={chartConfig.workingCapital.color} strokeWidth={3} dot={{ fill: chartConfig.workingCapital.color, strokeWidth: 2, r: 3 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="accuracy" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5" />
+                  Forecast Accuracy Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left p-2 text-muted-foreground">Date</th>
+                        <th className="text-right p-2 text-muted-foreground">Actual</th>
+                        <th className="text-right p-2 text-muted-foreground">Forecast</th>
+                        <th className="text-right p-2 text-muted-foreground">Variance %</th>
+                        <th className="text-right p-2 text-muted-foreground">Accuracy %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getAccuracyData().slice(-10).map((row, idx) => (
+                        <tr key={idx} className="border-b border-border/50">
+                          <td className="p-2 text-foreground">{row.date}</td>
+                          <td className="p-2 text-right text-foreground">{formatCurrency(row.actual)}</td>
+                          <td className="p-2 text-right text-foreground">{formatCurrency(row.forecast)}</td>
+                          <td className={`p-2 text-right font-medium ${row.variance < 5 ? "text-accent" : row.variance < 10 ? "text-primary" : "text-destructive"}`}>
+                            {row.variance.toFixed(1)}%
+                          </td>
+                          <td className={`p-2 text-right font-medium ${row.accuracy > 95 ? "text-accent" : row.accuracy > 90 ? "text-primary" : "text-destructive"}`}>
+                            {row.accuracy.toFixed(1)}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="transactions" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left p-2 text-muted-foreground">Date</th>
+                        <th className="text-left p-2 text-muted-foreground">Description</th>
+                        <th className="text-left p-2 text-muted-foreground">Category</th>
+                        <th className="text-right p-2 text-muted-foreground">Amount</th>
+                        <th className="text-center p-2 text-muted-foreground">Type</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactionData.map((t) => (
+                        <tr key={t.id} className="border-b border-border/50">
+                          <td className="p-2 text-foreground">{t.date}</td>
+                          <td className="p-2 text-foreground">{t.description}</td>
+                          <td className="p-2">
+                            <span className="px-2 py-1 rounded text-xs bg-primary/10 text-primary">{t.category}</span>
+                          </td>
+                          <td className={`p-2 text-right font-medium ${t.amount > 0 ? "text-accent" : "text-destructive"}`}>
+                            {formatCurrency(t.amount)}
+                          </td>
+                          <td className="p-2 text-center">
+                            <span className={`px-2 py-1 rounded text-xs ${t.type === "inflow" ? "bg-accent/10 text-accent" : "bg-destructive/10 text-destructive"}`}>
+                              {t.type}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      )}
+
+      {/* Completion banner */}
+      {currentStep >= steps.length - 1 && (
+        <div className="mt-6 p-4 bg-accent/10 rounded-lg border border-accent/20 text-center">
+          <p className="text-accent font-medium mb-2">✅ Demo Complete!</p>
+          <p className="text-muted-foreground text-sm">
+            Experience real-time cash flow forecasting with 99.2% accuracy powered by advanced AI models.
+          </p>
+        </div>
+      )}
     </div>
   );
 });
