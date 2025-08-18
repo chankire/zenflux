@@ -15,41 +15,55 @@ const generateDemoData = (period: string) => {
   const now = new Date();
   const data = [];
   const categories = ["Revenue", "Operations", "Marketing", "Payroll", "Travel"];
-  let dataPoints = 730; // default to 2 years daily
-  let actualCutoff = 365; // 1 year of actuals
+  
+  // Rolling window: 3 months back for actuals, 6 months forward for forecasts
+  const threeMonthsAgo = dfAddMonths(now, -3);
+  const sixMonthsAhead = dfAddMonths(now, 6);
+  
+  let dataPoints: number;
   let dateIncrement: (date: Date, index: number) => Date;
+  let startDate: Date;
 
   switch (period) {
     case "weekly":
-      dataPoints = 104; // 2 years of weeks
-      actualCutoff = 52; // 1 year
+      dataPoints = Math.ceil(39 / 7); // ~9 months in weeks
+      startDate = threeMonthsAgo;
       dateIncrement = (date, i) => addWeeks(date, i);
       break;
     case "monthly":
-      dataPoints = 24; // 2 years
-      actualCutoff = 12;
+      dataPoints = 9; // 3 months past + 6 months future
+      startDate = threeMonthsAgo;
       dateIncrement = (date, i) => addMonths(date, i);
       break;
     case "quarterly":
-      dataPoints = 8; // 2 years
-      actualCutoff = 4;
+      dataPoints = 3; // 1 quarter past + 2 quarters future
+      startDate = dfAddMonths(now, -3);
       dateIncrement = (date, i) => addQuarters(date, i);
       break;
     default: // daily
-      dataPoints = 730; // 2 years
-      actualCutoff = 365; // 1 year actuals
+      dataPoints = Math.ceil((sixMonthsAhead.getTime() - threeMonthsAgo.getTime()) / (1000 * 60 * 60 * 24));
+      startDate = threeMonthsAgo;
       dateIncrement = (date, i) => addDays(date, i);
   }
 
   for (let i = 0; i < dataPoints; i++) {
-    const date = dateIncrement(now, i);
-    const isActual = i < actualCutoff;
+    const date = dateIncrement(startDate, i);
+    const isActual = date <= now;
     const baseFlow = 150000 + Math.sin(i / 30) * 25000 + (Math.random() - 0.5) * 15000;
     const actualBalance = Math.round(baseFlow + i * 300);
     const forecastBalance = Math.round(actualBalance * (0.95 + Math.random() * 0.1));
     const baseForWC = isActual ? actualBalance : forecastBalance;
     const currentAssets = Math.max(0, Math.round(baseForWC * (0.6 + (Math.random() - 0.5) * 0.05)));
     const currentLiabilities = Math.max(1, Math.round(baseForWC * (0.45 + (Math.random() - 0.5) * 0.05)));
+
+    // Calculate variance for past data
+    let variance = null;
+    let accuracy = null;
+    if (isActual) {
+      const predicted = Math.round(actualBalance * (0.97 + Math.random() * 0.06)); // 97% avg accuracy
+      variance = Math.abs((actualBalance - predicted) / actualBalance) * 100;
+      accuracy = Math.max(0, 100 - variance);
+    }
 
     const row: any = {
       date: date.toISOString().split("T")[0],
@@ -58,7 +72,9 @@ const generateDemoData = (period: string) => {
       forecastBalance: !isActual ? forecastBalance : null,
       balance: isActual ? actualBalance : forecastBalance,
       isActual,
-      confidence: isActual ? 1 : Math.max(0.7, 0.95 - (i - actualCutoff) * 0.002),
+      variance,
+      accuracy,
+      confidence: isActual ? 1 : Math.max(0.7, 0.95 - (i * 0.002)),
       currentAssets,
       currentLiabilities,
       workingCapital: currentAssets - currentLiabilities,
@@ -455,7 +471,7 @@ const DemoVideo = forwardRef<any, {}>((props, ref) => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  Transaction Details — Past 3 Months & Next 6 Months
+                  Forecast Accuracy Analysis
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -464,69 +480,77 @@ const DemoVideo = forwardRef<any, {}>((props, ref) => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Date</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead className="text-right">Actual Balance</TableHead>
-                        <TableHead className="text-right">Forecast Balance</TableHead>
-                        <TableHead className="text-right">Variance</TableHead>
-                        <TableHead className="text-right">Working Capital</TableHead>
-                        <TableHead className="text-right">Current Ratio</TableHead>
+                        <TableHead className="text-right">Actual</TableHead>
+                        <TableHead className="text-right">Forecast</TableHead>
+                        <TableHead className="text-right">Variance %</TableHead>
+                        <TableHead className="text-right">Accuracy %</TableHead>
                       </TableRow>
                     </TableHeader>
-                     <TableBody>
-                       {windowAll.slice(0, 30).map((row, idx) => {
-                         // For past data, calculate variance from accuracy series
-                         let variance = null;
-                         let forecastAccuracy = null;
-                         
-                         if (row.isActual) {
-                           // Find corresponding accuracy data for actuals
-                           const accuracyRow = accuracySeries.find(acc => acc.date === row.formattedDate && acc.type === 'past');
-                           if (accuracyRow) {
-                             variance = accuracyRow.variance;
-                             forecastAccuracy = accuracyRow.accuracy;
-                           }
-                         } else {
-                           // For forecasts, show projected accuracy
-                           const accuracyRow = accuracySeries.find(acc => acc.date === row.formattedDate && acc.type === 'forecast');
-                           if (accuracyRow) {
-                             forecastAccuracy = accuracyRow.accuracy;
-                           }
-                         }
-                         
-                         return (
-                           <TableRow key={`${row.date}-${idx}`}>
-                             <TableCell>{row.formattedDate}</TableCell>
-                             <TableCell>
-                               <span className={`px-2 py-1 rounded-full text-xs ${
-                                 row.isActual 
-                                   ? "bg-blue-100 text-blue-800" 
-                                   : "bg-purple-100 text-purple-800"
-                               }`}>
-                                 {row.isActual ? "Actual" : "Forecast"}
-                               </span>
-                             </TableCell>
-                             <TableCell className="text-right">
-                               {row.actualBalance ? formatCurrency(row.actualBalance) : "—"}
-                             </TableCell>
-                             <TableCell className="text-right">
-                               {row.forecastBalance ? formatCurrency(row.forecastBalance) : "—"}
-                             </TableCell>
-                             <TableCell className="text-right">
-                               {variance !== null ? (
-                                 <span className={`${variance > 5 ? "text-red-600" : "text-green-600"}`}>
-                                   {variance.toFixed(1)}%
-                                 </span>
-                               ) : forecastAccuracy !== null ? (
-                                 <span className="text-purple-600">
-                                   {forecastAccuracy.toFixed(1)}% acc.
-                                 </span>
-                               ) : "—"}
-                             </TableCell>
-                             <TableCell className="text-right">{formatCurrency(row.workingCapital)}</TableCell>
-                             <TableCell className="text-right">{row.currentRatio}</TableCell>
-                           </TableRow>
-                         );
-                       })}
+                    <TableBody>
+                      {windowAll.slice(0, 20).map((row, idx) => {
+                        let actual: number | null = null;
+                        let forecast: number | null = null;
+                        let variance: number | null = null;
+                        let accuracy: number | null = null;
+
+                        if (row.isActual) {
+                          // Past 3 months: Show actual vs forecast variance
+                          actual = row.actualBalance;
+                          const predicted = Math.round(row.actualBalance * (0.97 + Math.random() * 0.06));
+                          forecast = predicted;
+                          variance = Math.abs((row.actualBalance - predicted) / row.actualBalance) * 100;
+                          accuracy = Math.max(0, 100 - variance);
+                        } else {
+                          // Next 6 months: Show forecast only
+                          forecast = row.forecastBalance;
+                          // Project decreasing accuracy over time
+                          const monthsOut = Math.floor(idx / 30 * 6);
+                          accuracy = Math.max(85, 97 - (monthsOut * 2));
+                          variance = 100 - accuracy;
+                        }
+
+                        return (
+                          <TableRow key={`${row.date}-${idx}`}>
+                            <TableCell className="font-medium">{row.formattedDate}</TableCell>
+                            <TableCell className="text-right">
+                              {actual ? (
+                                <span className="text-blue-600 font-medium">
+                                  {formatCurrency(actual)}
+                                </span>
+                              ) : "—"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {forecast ? (
+                                <span className="text-purple-600 font-medium">
+                                  {formatCurrency(forecast)}
+                                </span>
+                              ) : "—"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {variance !== null ? (
+                                <span className={`font-medium ${
+                                  variance > 10 ? "text-red-600" : 
+                                  variance > 5 ? "text-orange-600" : 
+                                  "text-green-600"
+                                }`}>
+                                  {variance.toFixed(1)}%
+                                </span>
+                              ) : "—"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {accuracy !== null ? (
+                                <span className={`font-medium ${
+                                  accuracy >= 95 ? "text-green-600" :
+                                  accuracy >= 90 ? "text-blue-600" :
+                                  "text-orange-600"
+                                }`}>
+                                  {accuracy.toFixed(1)}%
+                                </span>
+                              ) : "—"}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
