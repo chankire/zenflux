@@ -154,8 +154,8 @@ const DemoVideo = forwardRef<any, {}>((props, ref) => {
   const accuracy = "99.2%";
 
   const chartConfig: ChartConfig = {
-    actualBalance: { label: "Actual Balance", color: "hsl(var(--chart-1))" },
-    forecastBalance: { label: "Forecast Balance", color: "hsl(var(--chart-2))" },
+    actualBalance: { label: "Actual Balance", color: "hsl(214, 84%, 56%)" },
+    forecastBalance: { label: "Forecast Balance", color: "hsl(280, 84%, 56%)" },
   };
 
   return (
