@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import ForexAnalysis from "./components/ForexAnalysis";
 import ManualDataUpload from "./components/ManualDataUpload";
+import NavigationSidebar from "./components/NavigationSidebar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,17 +66,38 @@ const AppRoutes = () => {
         } />
         <Route path="/dashboard" element={
           <ProtectedRoute>
-            <Dashboard />
+            <div className="flex h-screen bg-background">
+              <div className="w-64 flex-shrink-0">
+                <NavigationSidebar />
+              </div>
+              <div className="flex-1 overflow-auto">
+                <Dashboard />
+              </div>
+            </div>
           </ProtectedRoute>
         } />
         <Route path="/forex" element={
           <ProtectedRoute>
-            <ForexAnalysis />
+            <div className="flex h-screen bg-background">
+              <div className="w-64 flex-shrink-0">
+                <NavigationSidebar />
+              </div>
+              <div className="flex-1 overflow-auto p-6">
+                <ForexAnalysis />
+              </div>
+            </div>
           </ProtectedRoute>
         } />
         <Route path="/upload" element={
           <ProtectedRoute>
-            <ManualDataUpload />
+            <div className="flex h-screen bg-background">
+              <div className="w-64 flex-shrink-0">
+                <NavigationSidebar />
+              </div>
+              <div className="flex-1 overflow-auto p-6">
+                <ManualDataUpload />
+              </div>
+            </div>
           </ProtectedRoute>
         } />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
