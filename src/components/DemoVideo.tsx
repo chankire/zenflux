@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,11 +14,10 @@ const generateDemoData = (period: string) => {
   const now = new Date();
   const data = [];
   const categories = ["Revenue", "Operations", "Marketing", "Payroll", "Travel"];
-  
   let dataPoints = 540; // 1.5 years of days
   let dateIncrement: (date: Date, index: number) => Date;
   let actualCutoff = 365; // 1 year of actuals
-  
+
   switch (period) {
     case "weekly":
       dataPoints = 78; // 1.5 years of weeks
@@ -40,7 +39,7 @@ const generateDemoData = (period: string) => {
       actualCutoff = 365; // 1 year of actuals
       dateIncrement = (date, i) => addDays(date, i);
   }
-  
+
   for (let i = 0; i < dataPoints; i++) {
     const date = dateIncrement(now, i);
     
@@ -69,7 +68,6 @@ const generateDemoData = (period: string) => {
     
     data.push(categoryData);
   }
-  
   return data;
 };
 
@@ -125,7 +123,7 @@ const chartConfig = {
   Travel: { label: "Travel", color: "hsl(0, 84%, 60%)" },
 };
 
-const DemoVideo = () => {
+const DemoVideo = forwardRef<any, {}>((props, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [period, setPeriod] = useState("daily");
@@ -143,6 +141,16 @@ const DemoVideo = () => {
     "Generating 99.2% accuracy forecast...",
     "Complete - Interactive dashboard ready!"
   ];
+
+  // Expose methods to parent component via ref
+  useImperativeHandle(ref, () => ({
+    startDemoFromHero: () => {
+      console.log('startDemoFromHero method called!');
+      setCurrentStep(0);
+      setIsPlaying(true);
+      setShowVideo(false); // Hide the YouTube video when starting interactive demo
+    }
+  }));
 
   useEffect(() => {
     console.log('Demo effect - isPlaying:', isPlaying, 'currentStep:', currentStep);
@@ -189,9 +197,9 @@ const DemoVideo = () => {
   };
 
   const currentBalance = data[29]?.balance || 150000;
-  const forecastBalance = data[89]?.balance || 175000;
+  const forecastBalance = data?.balance || 175000;
   const accuracy = "99.2%";
-  
+
   // Calculate accuracy data for comparison
   const getAccuracyData = () => {
     const actualData = data.filter(d => d.isActual);
@@ -231,10 +239,6 @@ const DemoVideo = () => {
             <RotateCcw className="w-4 h-4 mr-2" />
             Reset
           </Button>
-          <Button onClick={toggleVideo} variant="secondary">
-            <Video className="w-4 h-4 mr-2" />
-            {showVideo ? "Hide Video" : "Watch Video"}
-          </Button>
         </div>
 
         {currentStep < steps.length && (
@@ -249,33 +253,6 @@ const DemoVideo = () => {
           </div>
         )}
       </div>
-
-      {showVideo && (
-        <div className="mb-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Video className="w-5 h-5" />
-                Product Demo Video
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/50 flex items-center justify-center">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1&controls=1"
-                  title="ZenFlux Demo Video"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="rounded-lg"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {currentStep >= 2 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -627,6 +604,8 @@ const DemoVideo = () => {
       )}
     </div>
   );
-};
+});
+
+DemoVideo.displayName = "DemoVideo";
 
 export default DemoVideo;
