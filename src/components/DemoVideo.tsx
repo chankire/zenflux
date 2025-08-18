@@ -5,12 +5,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
-import { Play, Pause, RotateCcw, TrendingUp, DollarSign, Calendar, Target, BarChart3, Calculator } from "lucide-react";
+import { Play, Pause, RotateCcw, TrendingUp, DollarSign, Calendar, Target, BarChart3, Calculator, Home, Bot, Settings } from "lucide-react";
 import { format, addDays, addWeeks, addMonths, addQuarters, addMonths as dfAddMonths } from "date-fns";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import ExecutiveDashboard from "@/components/ExecutiveDashboard";
+import GenAICopilot from "@/components/GenAICopilot";
+import ScenarioPlanning from "@/components/ScenarioPlanning";
+import DataUploadExport from "@/components/DataUploadExport";
+import { useNavigate } from "react-router-dom";
 
 // ---------------------- Demo Data Generation ----------------------
 const generateTransactionData = (period: string) => {
@@ -143,11 +147,12 @@ const formatDateForPeriod = (date: Date, period: string) => {
 
 // ---------------------- Demo Component ----------------------
 const DemoVideo = forwardRef<{ reset: () => void; startDemoFromHero: () => void }>((_, ref) => {
+  const navigate = useNavigate();
   const [isDemoActive, setIsDemoActive] = useState(false);
   const [period, setPeriod] = useState("monthly");
   const [currentTab, setCurrentTab] = useState("executive");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [transactions] = useState(() => generateTransactionData("monthly"));
+  const [transactions, setTransactions] = useState(() => generateTransactionData("monthly"));
   const { formatCurrency } = useCurrency();
 
   const data = generateDemoData(period);
@@ -163,6 +168,14 @@ const DemoVideo = forwardRef<{ reset: () => void; startDemoFromHero: () => void 
       setIsDemoActive(true);
     }
   }));
+
+  const handleDataUpdate = (newTransactions: any[]) => {
+    setTransactions(newTransactions);
+  };
+
+  const goHome = () => {
+    navigate('/');
+  };
 
   const categoryChartData = ["Revenue", "Operations", "Marketing", "Payroll", "Travel"].map((cat) => ({
     category: cat,
@@ -280,14 +293,44 @@ const DemoVideo = forwardRef<{ reset: () => void; startDemoFromHero: () => void 
         <p className="text-muted-foreground">Comprehensive Financial Analytics and Forecasting</p>
       </div>
 
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold">ZenFlux Analytics Demo</h2>
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">Daily</SelectItem>
+              <SelectItem value="weekly">Weekly</SelectItem>
+              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="quarterly">Quarterly</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={goHome}>
+            <Home className="h-4 w-4 mr-2" />
+            Home
+          </Button>
+          <Button variant="outline" onClick={() => setIsDemoActive(false)}>
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Exit Demo
+          </Button>
+        </div>
+      </div>
+
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="executive">Executive</TabsTrigger>
-          <TabsTrigger value="overview">Cash Flow</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
-          <TabsTrigger value="working">Working Capital</TabsTrigger>
-          <TabsTrigger value="accuracy">Forecast Accuracy</TabsTrigger>
-          <TabsTrigger value="transactions">Transaction Details</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 gap-1">
+          <TabsTrigger value="executive" className="text-xs lg:text-sm">Executive</TabsTrigger>
+          <TabsTrigger value="overview" className="text-xs lg:text-sm">Cash Flow</TabsTrigger>
+          <TabsTrigger value="categories" className="text-xs lg:text-sm">Categories</TabsTrigger>
+          <TabsTrigger value="working" className="text-xs lg:text-sm">Working Capital</TabsTrigger>
+          <TabsTrigger value="accuracy" className="text-xs lg:text-sm">Accuracy</TabsTrigger>
+          <TabsTrigger value="transactions" className="text-xs lg:text-sm">Transactions</TabsTrigger>
+          <TabsTrigger value="copilot" className="text-xs lg:text-sm">AI Copilot</TabsTrigger>
+          <TabsTrigger value="scenario" className="text-xs lg:text-sm">Scenarios</TabsTrigger>
+          <TabsTrigger value="data" className="text-xs lg:text-sm">Data Mgmt</TabsTrigger>
         </TabsList>
 
         {/* Executive Dashboard */}
@@ -624,6 +667,29 @@ const DemoVideo = forwardRef<{ reset: () => void; startDemoFromHero: () => void 
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="copilot">
+          <GenAICopilot 
+            data={data} 
+            transactions={transactions} 
+            period={period} 
+          />
+        </TabsContent>
+
+        <TabsContent value="scenario">
+          <ScenarioPlanning 
+            data={data} 
+            period={period} 
+          />
+        </TabsContent>
+
+        <TabsContent value="data">
+          <DataUploadExport 
+            transactions={transactions} 
+            data={data} 
+            onDataUpdate={handleDataUpdate} 
+          />
         </TabsContent>
       </Tabs>
     </div>
