@@ -45,7 +45,7 @@ const CFOsAI = () => {
                 <p className="text-xl text-muted-foreground mb-8">CFOs are under increasing pressure to deliver accurate forecasts in volatile markets. AI-powered forecasting isn't just a nice-to-have—it's becoming essential for competitive advantage.</p>
                 
                 <h2 className="text-2xl font-bold mt-12 mb-6">The Accuracy Challenge</h2>
-                <p className="mb-6">Traditional forecasting methods achieve 70-80% accuracy at best. AI-powered models consistently deliver >95% accuracy by identifying patterns humans miss and processing vast amounts of data in real-time.</p>
+                <p className="mb-6">Traditional forecasting methods achieve 70-80% accuracy at best. AI-powered models consistently deliver &gt;95% accuracy by identifying patterns humans miss and processing vast amounts of data in real-time.</p>
                 
                 <div className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20 border p-6 rounded-lg my-8">
                   <h4 className="font-semibold mb-4">Give Your Finance Team Superpowers with ZenFlux</h4>
