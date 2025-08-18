@@ -8,20 +8,48 @@ import { useRef } from "react";
 const Hero = () => {
   const demoVideoRef = useRef<DemoVideoHandle | null>(null);
 
+  const visiblyMarkDemoSection = () => {
+    const el = document.getElementById("demo-section");
+    if (!el) return;
+    // Visible cue so we know click handler ran even if console logs are stripped
+    el.classList.add("ring-4", "ring-primary/60", "rounded-xl");
+    setTimeout(() => el.classList.remove("ring-4", "ring-primary/60", "rounded-xl"), 1500);
+  };
+
+  const startDemoWithFallbacks = () => {
+    // 1) Preferred: call the imperative handle
+    const ok = !!demoVideoRef.current?.startDemoFromHero;
+    if (ok) {
+      demoVideoRef.current!.startDemoFromHero();
+      return;
+    }
+    // 2) Fallback: click the Start Demo button inside the widget
+    const btn = document.querySelector<HTMLButtonElement>("[data-demo-start='true']");
+    if (btn) {
+      btn.click();
+      return;
+    }
+    // 3) Last resort: do nothing silently (shouldn't happen)
+  };
+
   const handleWatchDemo = () => {
-    // Smoothly scroll the demo section into view
     const demoSection = document.getElementById("demo-section");
+
+    // visible cue that the click handler ran
+    visiblyMarkDemoSection();
+
+    // smooth scroll to the section
     if (demoSection) {
       demoSection.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
-    // Call the demo start method after the next layout ticks
-    // (more reliable than a fixed setTimeout)
+    // call start after layout settles (don’t rely on setTimeout)
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        demoVideoRef.current?.startDemoFromHero();
-      });
+      requestAnimationFrame(() => startDemoWithFallbacks());
     });
+
+    // ultimate fallback in case above is too early on slow devices
+    setTimeout(startDemoWithFallbacks, 1000);
   };
 
   return (
@@ -61,6 +89,7 @@ const Hero = () => {
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button
+              data-watch-demo="true"
               variant="outline"
               size="lg"
               onClick={handleWatchDemo}
@@ -79,9 +108,7 @@ const Hero = () => {
                 <TrendingUp className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">99.2% Accuracy</h3>
-              <p className="text-muted-foreground text-sm">
-                Advanced ML models with ensemble forecasting
-              </p>
+              <p className="text-muted-foreground text-sm">Advanced ML models with ensemble forecasting</p>
             </div>
 
             <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover:shadow-glow transition-all duration-300">
@@ -89,9 +116,7 @@ const Hero = () => {
                 <Shield className="w-6 h-6 text-accent" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">Enterprise Security</h3>
-              <p className="text-muted-foreground text-sm">
-                SOC2 compliant with multi-tenant isolation
-              </p>
+              <p className="text-muted-foreground text-sm">SOC2 compliant with multi-tenant isolation</p>
             </div>
 
             <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover:shadow-glow transition-all duration-300">
@@ -99,9 +124,7 @@ const Hero = () => {
                 <Zap className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">GenAI Copilot</h3>
-              <p className="text-muted-foreground text-sm">
-                Natural language analytics and reporting
-              </p>
+              <p className="text-muted-foreground text-sm">Natural language analytics and reporting</p>
             </div>
           </div>
 
