@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.seed-demo-data]
 verify_jwt = false
+
+[functions.send-demo-request]
+verify_jwt = false
+
+[functions.send-waitlist-request]
+verify_jwt = false
