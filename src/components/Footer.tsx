@@ -15,11 +15,21 @@ const Footer = () => {
     {
       title: "Resources",
       links: [
-        { label: "Documentation", href: "#docs" },
-        { label: "Blog", href: "#blog" },
+        { label: "Documentation", href: "/documentation" },
+        { label: "Blog", href: "/blog" },
+        { label: "Waitlist", href: "/waitlist" },
         { label: "Case Studies", href: "#cases" },
-        { label: "Webinars", href: "#webinars" },
         { label: "Help Center", href: "#help" }
+      ]
+    },
+    {
+      title: "Popular Reads",
+      links: [
+        { label: "Why Spreadsheets Fail", href: "/blog/cash-flow-forecasting-broken-spreadsheets" },
+        { label: "Managing Runway in 2025", href: "/blog/founders-guide-managing-runway-2025" },
+        { label: "AI for CFOs", href: "/blog/how-cfos-leverage-ai-improve-forecast-accuracy" },
+        { label: "Multi-Bank Visibility", href: "/blog/multi-bank-visibility-growing-businesses" },
+        { label: "Future of Forecasting", href: "/blog/future-financial-forecasting-ai-powered" }
       ]
     },
     {

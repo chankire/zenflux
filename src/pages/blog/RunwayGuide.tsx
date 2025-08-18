@@ -174,7 +174,7 @@ const RunwayGuide = () => {
 
                 <h3 className="text-xl font-semibold mt-8 mb-4">The Multi-Account Challenge</h3>
                 <p className="mb-6">
-                  Modern startups typically have 5-8 different financial accounts:
+                  Modern startups typically have 5-8 different financial accounts. Implementing a <a href="/#pricing" className="text-primary hover:underline">multi-bank setup via API</a> becomes essential for accurate runway calculations:
                 </p>
 
                 <ul className="list-disc list-inside mb-6 space-y-2">
@@ -188,7 +188,7 @@ const RunwayGuide = () => {
                 </ul>
 
                 <p className="mb-6">
-                  Without unified visibility, you're making critical decisions on incomplete information.
+                  Without unified visibility, you're making critical decisions on incomplete information. This is where <a href="/blog/future-financial-forecasting-ai-powered" className="text-primary hover:underline">the future of financial forecasting</a> with AI-powered tools becomes game-changing.
                 </p>
 
                 <Card className="my-8 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">

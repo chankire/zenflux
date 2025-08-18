@@ -161,12 +161,12 @@ const SpreadsheetsBroken = () => {
                 <h2 className="text-2xl font-bold mt-12 mb-6">How AI and Automation Solve the Problem</h2>
 
                 <p className="mb-6">
-                  Modern AI-powered forecasting tools don't just replace spreadsheets—they fundamentally change how cash flow forecasting works.
+                  Modern AI-powered forecasting tools don't just replace spreadsheets—they fundamentally change how cash flow forecasting works. Understanding <a href="/blog/how-cfos-leverage-ai-improve-forecast-accuracy" className="text-primary hover:underline">how CFOs can improve forecast accuracy</a> with these tools is crucial for competitive advantage.
                 </p>
 
                 <h3 className="text-xl font-semibold mt-8 mb-4">Real-Time Data Integration</h3>
                 <p className="mb-6">
-                  Instead of manual data entry, AI tools connect directly to your banks, accounting systems, and payment processors. Your forecast updates automatically as transactions flow through your accounts.
+                  Instead of manual data entry, AI tools connect directly to your banks, accounting systems, and payment processors. This <a href="/blog/multi-bank-visibility-growing-businesses" className="text-primary hover:underline">multi-bank visibility</a> ensures your forecast updates automatically as transactions flow through your accounts.
                 </p>
 
                 <h3 className="text-xl font-semibold mt-8 mb-4">Pattern Recognition</h3>
