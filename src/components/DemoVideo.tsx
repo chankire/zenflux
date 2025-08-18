@@ -320,21 +320,21 @@ const DemoVideo = forwardRef<{ reset: () => void; startDemoFromHero: () => void 
         </div>
       </div>
 
-      <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 gap-1">
-          <TabsTrigger value="executive" className="text-xs lg:text-sm">Executive</TabsTrigger>
-          <TabsTrigger value="overview" className="text-xs lg:text-sm">Cash Flow</TabsTrigger>
-          <TabsTrigger value="categories" className="text-xs lg:text-sm">Categories</TabsTrigger>
-          <TabsTrigger value="working" className="text-xs lg:text-sm">Working Capital</TabsTrigger>
-          <TabsTrigger value="accuracy" className="text-xs lg:text-sm">Accuracy</TabsTrigger>
-          <TabsTrigger value="transactions" className="text-xs lg:text-sm">Transactions</TabsTrigger>
-          <TabsTrigger value="copilot" className="text-xs lg:text-sm">AI Copilot</TabsTrigger>
-          <TabsTrigger value="scenario" className="text-xs lg:text-sm">Scenarios</TabsTrigger>
-          <TabsTrigger value="data" className="text-xs lg:text-sm">Data Mgmt</TabsTrigger>
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 gap-1 p-1 h-auto">
+          <TabsTrigger value="executive" className="text-xs lg:text-sm px-2 py-1.5">Executive</TabsTrigger>
+          <TabsTrigger value="overview" className="text-xs lg:text-sm px-2 py-1.5">Cash Flow</TabsTrigger>
+          <TabsTrigger value="categories" className="text-xs lg:text-sm px-2 py-1.5">Categories</TabsTrigger>
+          <TabsTrigger value="working" className="text-xs lg:text-sm px-2 py-1.5">Working Capital</TabsTrigger>
+          <TabsTrigger value="accuracy" className="text-xs lg:text-sm px-2 py-1.5">Accuracy</TabsTrigger>
+          <TabsTrigger value="transactions" className="text-xs lg:text-sm px-2 py-1.5">Transactions</TabsTrigger>
+          <TabsTrigger value="copilot" className="text-xs lg:text-sm px-2 py-1.5">AI Copilot</TabsTrigger>
+          <TabsTrigger value="scenario" className="text-xs lg:text-sm px-2 py-1.5">Scenarios</TabsTrigger>
+          <TabsTrigger value="data" className="text-xs lg:text-sm px-2 py-1.5">Data Mgmt</TabsTrigger>
         </TabsList>
 
         {/* Executive Dashboard */}
-        <TabsContent value="executive" className="space-y-4">
+        <TabsContent value="executive" className="mt-6">
           <ExecutiveDashboard 
             period={period} 
             onPeriodChange={setPeriod}
