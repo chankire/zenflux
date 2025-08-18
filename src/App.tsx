@@ -7,6 +7,8 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import ForexAnalysis from "./components/ForexAnalysis";
+import ManualDataUpload from "./components/ManualDataUpload";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +66,16 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/forex" element={
+          <ProtectedRoute>
+            <ForexAnalysis />
+          </ProtectedRoute>
+        } />
+        <Route path="/upload" element={
+          <ProtectedRoute>
+            <ManualDataUpload />
           </ProtectedRoute>
         } />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
