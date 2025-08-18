@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { Play, Pause, RotateCcw, TrendingUp, DollarSign, Calendar, Target, BarChart3, Calculator } from "lucide-react";
 import { format, addDays, addWeeks, addMonths, addQuarters, addMonths as dfAddMonths } from "date-fns";
@@ -153,6 +153,11 @@ const DemoVideo = forwardRef<any, {}>((props, ref) => {
   const forecastBalance = data[data.length - 90]?.balance || 175000;
   const accuracy = "99.2%";
 
+  const chartConfig: ChartConfig = {
+    actualBalance: { label: "Actual Balance", color: "hsl(var(--chart-1))" },
+    forecastBalance: { label: "Forecast Balance", color: "hsl(var(--chart-2))" },
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto p-6 bg-gradient-card rounded-2xl border border-border shadow-elegant">
       <div className="mb-6 text-center">
@@ -207,7 +212,7 @@ const DemoVideo = forwardRef<any, {}>((props, ref) => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ChartContainer className="h-[400px]">
+                <ChartContainer config={chartConfig} className="h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={data}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
