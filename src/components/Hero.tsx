@@ -3,54 +3,51 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import DemoVideo, { type DemoVideoHandle } from "@/components/DemoVideo";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const Hero = () => {
   const demoVideoRef = useRef<DemoVideoHandle | null>(null);
 
-  const visiblyMarkDemoSection = () => {
+  const markDemoVisibly = () => {
     const el = document.getElementById("demo-section");
     if (!el) return;
-    // Visible cue so we know click handler ran even if console logs are stripped
     el.classList.add("ring-4", "ring-primary/60", "rounded-xl");
-    setTimeout(() => el.classList.remove("ring-4", "ring-primary/60", "rounded-xl"), 1500);
+    setTimeout(() => el.classList.remove("ring-4", "ring-primary/60", "rounded-xl"), 1200);
   };
 
   const startDemoWithFallbacks = () => {
-    // 1) Preferred: call the imperative handle
-    const ok = !!demoVideoRef.current?.startDemoFromHero;
-    if (ok) {
-      demoVideoRef.current!.startDemoFromHero();
+    // Preferred: imperative handle
+    if (demoVideoRef.current?.startDemoFromHero) {
+      demoVideoRef.current.startDemoFromHero();
       return;
     }
-    // 2) Fallback: click the Start Demo button inside the widget
+    // Fallback: click the internal Start Demo button
     const btn = document.querySelector<HTMLButtonElement>("[data-demo-start='true']");
-    if (btn) {
-      btn.click();
-      return;
-    }
-    // 3) Last resort: do nothing silently (shouldn't happen)
+    btn?.click();
   };
 
   const handleWatchDemo = () => {
+    markDemoVisibly();
+
     const demoSection = document.getElementById("demo-section");
+    demoSection?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-    // visible cue that the click handler ran
-    visiblyMarkDemoSection();
-
-    // smooth scroll to the section
-    if (demoSection) {
-      demoSection.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    // call start after layout settles (don’t rely on setTimeout)
+    // Kick off after layout; schedule twice + a late timeout
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => startDemoWithFallbacks());
+      requestAnimationFrame(() => {
+        startDemoWithFallbacks();
+      });
     });
-
-    // ultimate fallback in case above is too early on slow devices
     setTimeout(startDemoWithFallbacks, 1000);
   };
+
+  // Add a defensive native listener as well, in case something interferes with React onClick
+  useEffect(() => {
+    const el = document.getElementById("watch-demo-btn");
+    if (!el) return;
+    el.addEventListener("click", handleWatchDemo);
+    return () => el.removeEventListener("click", handleWatchDemo);
+  }, []);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
@@ -70,7 +67,7 @@ const Hero = () => {
             AI-Powered Cash Forecasting
           </div>
 
-          {/* Main headline */}
+          {/* Headline */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-tight">
             ZenFlux
           </h1>
@@ -88,20 +85,21 @@ const Hero = () => {
               Start Free Trial
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button
+
+            {/* Use a native button to guarantee onClick works */}
+            <button
+              id="watch-demo-btn"
               data-watch-demo="true"
-              variant="outline"
-              size="lg"
               onClick={handleWatchDemo}
-              className="group"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-6 py-3 text-sm font-medium shadow-sm hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 group"
               type="button"
             >
               Watch Demo
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            </button>
           </div>
 
-          {/* Key features */}
+          {/* 3 feature cards (unchanged) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             <div className="flex flex-col items-center text-center p-6 rounded-xl bg-gradient-card border border-border/50 shadow-elegant hover:shadow-glow transition-all duration-300">
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
