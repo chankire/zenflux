@@ -4,48 +4,45 @@ import { Check, Zap, Crown, Building2 } from "lucide-react";
 const Pricing = () => {
   const plans = [
     {
-      name: "Free",
+      name: "Starter",
       icon: Zap,
-      price: "$0",
-      period: "forever",
-      description: "Perfect for small teams getting started",
+      price: "$49",
+      period: "/mo",
+      description: "For founders < $1M ARR",
       features: [
-        "1 bank connection",
-        "2 users",
-        "1 forecast model",
-        "Basic scenarios",
-        "Community support",
-        "30-day history"
+        "2-year cash flow forecasting",
+        "99% forecast accuracy",
+        "Basic AI insights",
+        "Email support",
+        "1-2 user accounts",
+        "Monthly financial reports"
       ],
       limitations: [
-        "No API access",
-        "No SSO",
-        "Basic reporting"
+        "Limited integrations",
+        "Standard support"
       ],
-      buttonText: "Start Free",
+      buttonText: "Join Waitlist",
       buttonVariant: "outline" as const,
       popular: false
     },
     {
-      name: "Pro",
+      name: "Growth",
       icon: Crown,
-      price: "$99",
-      period: "per month",
-      description: "Advanced features for growing treasury teams",
+      price: "$199",
+      period: "/mo",
+      description: "For finance teams",
       features: [
-        "10 bank connections",
-        "10 users",
-        "Unlimited forecast models",
-        "Advanced scenarios",
-        "API & webhooks",
-        "Scheduled reports",
-        "Email support",
-        "2-year history",
-        "GenAI copilot",
-        "Custom dashboards"
+        "Everything in Starter",
+        "Advanced AI copilot",
+        "Real-time dashboards",
+        "Multi-currency support", 
+        "Priority support",
+        "Up to 10 user accounts",
+        "Custom integrations",
+        "API access"
       ],
       limitations: [],
-      buttonText: "Start Pro Trial",
+      buttonText: "Join Waitlist",
       buttonVariant: "hero" as const,
       popular: true
     },
@@ -53,22 +50,20 @@ const Pricing = () => {
       name: "Enterprise",
       icon: Building2,
       price: "Custom",
-      period: "pricing",
-      description: "Complete solution for large organizations",
+      period: "",
+      description: "For large organizations",
       features: [
-        "Unlimited connections",
+        "Everything in Growth",
+        "White-label options",
+        "Dedicated success manager",
+        "Custom training",
+        "Enterprise security",
         "Unlimited users",
-        "SSO/SAML",
-        "IP allowlist",
-        "Dedicated support",
-        "Private VPC option",
-        "Custom integrations",
-        "Advanced security",
-        "Compliance reporting",
-        "Professional services"
+        "24/7 phone support",
+        "SLA guarantees"
       ],
       limitations: [],
-      buttonText: "Contact Sales",
+      buttonText: "Join Waitlist",
       buttonVariant: "premium" as const,
       popular: false
     }
@@ -116,7 +111,7 @@ const Pricing = () => {
                   <p className="text-muted-foreground text-sm mb-4">{plan.description}</p>
                   <div className="mb-6">
                     <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground ml-2">/{plan.period}</span>
+                    {plan.period && <span className="text-muted-foreground ml-2">{plan.period}</span>}
                   </div>
                 </div>
                 
@@ -124,6 +119,7 @@ const Pricing = () => {
                   variant={plan.buttonVariant} 
                   className="w-full mb-6"
                   size="lg"
+                  onClick={() => window.location.href = '/waitlist'}
                 >
                   {plan.buttonText}
                 </Button>

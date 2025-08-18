@@ -87,7 +87,7 @@ const Header = () => {
             ) : (
               <>
                 <Button variant="ghost" onClick={() => window.location.href = '/auth'}>Sign In</Button>
-                <Button variant="default" onClick={() => window.location.href = '/auth'}>Start Free Trial</Button>
+                <Button variant="hero" onClick={() => window.location.href = '/waitlist'}>Get Access</Button>
               </>
             )}
           </div>

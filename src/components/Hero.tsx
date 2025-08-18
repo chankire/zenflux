@@ -52,31 +52,34 @@ const Hero = () => {
           </div>
           
           {/* Main headline */}
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-tight">
-            ZenFlux
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-tight">
+            Stop guessing your cash flow.<br />Start predicting with AI.
           </h1>
           
-          <p className="text-xl md:text-2xl text-muted-foreground mb-4 font-light">
-            Real-time cash visibility, trustworthy AI forecasting,
-          </p>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-12 font-light">
-            and a finance copilot for treasurers
+          <p className="text-xl md:text-2xl text-muted-foreground mb-12 font-light max-w-4xl mx-auto">
+            ZenFlux helps founders and CFOs forecast with 99% accuracy — 2 years ahead — in minutes, not weeks.
           </p>
           
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <Button variant="hero" size="lg" className="group">
-              Start Free Trial
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
             <Button 
-              variant="outline" 
+              variant="hero" 
               size="lg" 
               onClick={handleWatchDemo}
               className="group"
               type="button"
             >
-              Watch Demo
+              Try the Demo
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="group"
+              type="button"
+              onClick={() => window.location.href = '/waitlist'}
+            >
+              Request Early Access
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>

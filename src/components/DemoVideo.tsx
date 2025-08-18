@@ -14,6 +14,7 @@ import ExecutiveDashboard from "@/components/ExecutiveDashboard";
 import GenAICopilot from "@/components/GenAICopilot";
 import ScenarioPlanning from "@/components/ScenarioPlanning";
 import DataUploadExport from "@/components/DataUploadExport";
+import DemoCompletion from "@/components/DemoCompletion";
 import { useNavigate } from "react-router-dom";
 
 // ---------------------- Demo Data Generation ----------------------
@@ -327,7 +328,7 @@ const DemoVideo = forwardRef<{ reset: () => void; startDemoFromHero: () => void 
           <TabsTrigger value="categories" className="text-xs lg:text-sm px-2 py-1.5">Categories</TabsTrigger>
           <TabsTrigger value="working" className="text-xs lg:text-sm px-2 py-1.5">Working Capital</TabsTrigger>
           <TabsTrigger value="accuracy" className="text-xs lg:text-sm px-2 py-1.5">Accuracy</TabsTrigger>
-          <TabsTrigger value="transactions" className="text-xs lg:text-sm px-2 py-1.5">Transactions</TabsTrigger>
+          <TabsTrigger value="transactions" className="text-xs lg:text-sm px-2 py-1.5">Sample Transactions</TabsTrigger>
           <TabsTrigger value="copilot" className="text-xs lg:text-sm px-2 py-1.5">AI Copilot</TabsTrigger>
           <TabsTrigger value="scenario" className="text-xs lg:text-sm px-2 py-1.5">Scenarios</TabsTrigger>
           <TabsTrigger value="data" className="text-xs lg:text-sm px-2 py-1.5">Data Mgmt</TabsTrigger>
@@ -692,6 +693,9 @@ const DemoVideo = forwardRef<{ reset: () => void; startDemoFromHero: () => void 
           />
         </TabsContent>
       </Tabs>
+      
+      {/* Demo Completion CTA */}
+      <DemoCompletion />
     </div>
   );
 });

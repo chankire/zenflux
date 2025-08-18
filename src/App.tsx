@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Waitlist from "./pages/Waitlist";
 import ForexAnalysis from "./components/ForexAnalysis";
 import ManualDataUpload from "./components/ManualDataUpload";
 import NavigationSidebar from "./components/NavigationSidebar";
@@ -100,6 +101,7 @@ const AppRoutes = () => {
             </div>
           </ProtectedRoute>
         } />
+        <Route path="/waitlist" element={<Waitlist />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
