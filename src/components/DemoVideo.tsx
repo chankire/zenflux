@@ -197,7 +197,7 @@ const DemoVideo = forwardRef<any, {}>((props, ref) => {
   };
 
   const currentBalance = data[29]?.balance || 150000;
-  const forecastBalance = data?.balance || 175000;
+  const forecastBalance = data[data.length - 90]?.balance || 175000;
   const accuracy = "99.2%";
 
   // Calculate accuracy data for comparison
