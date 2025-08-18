@@ -236,10 +236,23 @@ const DemoVideo = forwardRef<any, {}>((props, ref) => {
           <TabsContent value="forecast" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
-                  Cash Flow Forecast (Past 3 Months & Next 6 Months)
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5" />
+                    Cash Flow Forecast (Past 3 Months & Next 6 Months)
+                  </CardTitle>
+                  <Select value={period} onValueChange={setPeriod}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Select period" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="quarterly">Quarterly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={chartConfig} className="h-[400px]">
@@ -399,23 +412,48 @@ const DemoVideo = forwardRef<any, {}>((props, ref) => {
                       <TableRow>
                         <TableHead>Date</TableHead>
                         <TableHead>Type</TableHead>
-                        <TableHead className="text-right">Balance</TableHead>
+                        <TableHead className="text-right">Actual Balance</TableHead>
+                        <TableHead className="text-right">Forecast Balance</TableHead>
+                        <TableHead className="text-right">Variance</TableHead>
                         <TableHead className="text-right">Working Capital</TableHead>
                         <TableHead className="text-right">Current Ratio</TableHead>
-                        <TableHead className="text-right">Quick Ratio</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {windowAll.slice(0, 30).map((row, idx) => (
-                        <TableRow key={`${row.date}-${idx}`}>
-                          <TableCell>{row.formattedDate}</TableCell>
-                          <TableCell>{row.isActual ? "Actual" : "Forecast"}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(row.balance)}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(row.workingCapital)}</TableCell>
-                          <TableCell className="text-right">{row.currentRatio}</TableCell>
-                          <TableCell className="text-right">{row.quickRatio}</TableCell>
-                        </TableRow>
-                      ))}
+                      {windowAll.slice(0, 30).map((row, idx) => {
+                        const variance = row.isActual && row.actualBalance && row.forecastBalance 
+                          ? Math.abs(row.actualBalance - row.forecastBalance) / row.actualBalance * 100
+                          : null;
+                        return (
+                          <TableRow key={`${row.date}-${idx}`}>
+                            <TableCell>{row.formattedDate}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                row.isActual 
+                                  ? "bg-blue-100 text-blue-800" 
+                                  : "bg-purple-100 text-purple-800"
+                              }`}>
+                                {row.isActual ? "Actual" : "Forecast"}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {row.actualBalance ? formatCurrency(row.actualBalance) : "—"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {row.forecastBalance ? formatCurrency(row.forecastBalance) : "—"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {variance !== null ? (
+                                <span className={`${variance > 5 ? "text-red-600" : "text-green-600"}`}>
+                                  {variance.toFixed(1)}%
+                                </span>
+                              ) : "—"}
+                            </TableCell>
+                            <TableCell className="text-right">{formatCurrency(row.workingCapital)}</TableCell>
+                            <TableCell className="text-right">{row.currentRatio}</TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
