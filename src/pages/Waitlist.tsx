@@ -18,24 +18,31 @@ const Waitlist = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Store in localStorage for now (placeholder for backend)
-    const waitlistData = JSON.parse(localStorage.getItem('zenflux-waitlist') || '[]');
-    const newEntry = {
-      ...formData,
-      timestamp: new Date().toISOString(),
-      id: Date.now().toString(),
-    };
-    waitlistData.push(newEntry);
-    localStorage.setItem('zenflux-waitlist', JSON.stringify(waitlistData));
-    
-    setIsSubmitted(true);
-    toast({
-      title: "Welcome to the waitlist!",
-      description: "We'll reach out soon with early access details.",
-    });
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      
+      const { error } = await supabase.functions.invoke('send-waitlist-request', {
+        body: formData
+      });
+
+      if (error) throw error;
+
+      setIsSubmitted(true);
+      toast({
+        title: "Welcome to the waitlist!",
+        description: "We'll reach out soon with early access details.",
+      });
+    } catch (error: any) {
+      console.error('Error sending waitlist request:', error);
+      toast({
+        variant: "destructive",
+        title: "Error joining waitlist",
+        description: error.message || "Please try again or contact us directly.",
+      });
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
