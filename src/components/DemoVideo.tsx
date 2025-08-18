@@ -199,6 +199,7 @@ const DemoVideo = forwardRef<{ reset: () => void }>((_, ref) => {
 
   const accuracyData = windowAll.slice(0, 20).map((row, idx) => {
     if (row.isActual) {
+      // Only show variance and accuracy for actual data (past dates)
       const predicted = Math.round(row.actualBalance * (0.97 + Math.random() * 0.06));
       const variance = Math.abs((row.actualBalance - predicted) / row.actualBalance) * 100;
       return {
@@ -208,13 +209,12 @@ const DemoVideo = forwardRef<{ reset: () => void }>((_, ref) => {
         accuracy: Math.max(0, 100 - variance)
       };
     } else {
-      const monthsOut = Math.floor(idx / 30 * 6);
-      const accuracy = Math.max(85, 97 - (monthsOut * 2));
+      // For future dates (forecasts), don't show variance and accuracy since they can't be calculated yet
       return {
         ...row,
         predicted: row.forecastBalance,
-        variance: 100 - accuracy,
-        accuracy
+        variance: null,
+        accuracy: null
       };
     }
   });
