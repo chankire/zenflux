@@ -27,8 +27,8 @@ const Features = () => {
     },
     {
       icon: LineChart,
-      title: "Real-time Visibility",
-      description: "Live cash positions across banks, currencies, and entities. Automated bank feed synchronization.",
+      title: "Multi-Bank API Integration",
+      description: "Connect multiple bank accounts securely in minutes to see a complete financial picture. Included in all plans.",
       color: "text-primary",
       bgColor: "bg-primary/10"
     },

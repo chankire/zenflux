@@ -8,6 +8,11 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Waitlist from "./pages/Waitlist";
+import Documentation from "./pages/Documentation";
+import Blog from "./pages/Blog";
+import SpreadsheetsBroken from "./pages/blog/SpreadsheetsBroken";
+import RunwayGuide from "./pages/blog/RunwayGuide";
+import CFOsAI from "./pages/blog/CFOsAI";
 import ForexAnalysis from "./components/ForexAnalysis";
 import ManualDataUpload from "./components/ManualDataUpload";
 import NavigationSidebar from "./components/NavigationSidebar";
@@ -102,6 +107,11 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } />
         <Route path="/waitlist" element={<Waitlist />} />
+        <Route path="/documentation" element={<Documentation />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/cash-flow-forecasting-broken-spreadsheets" element={<SpreadsheetsBroken />} />
+        <Route path="/blog/founders-guide-managing-runway-2025" element={<RunwayGuide />} />
+        <Route path="/blog/cfos-leverage-ai-improve-forecast-accuracy" element={<CFOsAI />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
