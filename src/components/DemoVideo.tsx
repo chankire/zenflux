@@ -142,7 +142,8 @@ const formatDateForPeriod = (date: Date, period: string) => {
 };
 
 // ---------------------- Demo Component ----------------------
-const DemoVideo = forwardRef<{ reset: () => void }>((_, ref) => {
+const DemoVideo = forwardRef<{ reset: () => void; startDemoFromHero: () => void }>((_, ref) => {
+  const [isDemoActive, setIsDemoActive] = useState(false);
   const [period, setPeriod] = useState("monthly");
   const [currentTab, setCurrentTab] = useState("executive");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -155,6 +156,11 @@ const DemoVideo = forwardRef<{ reset: () => void }>((_, ref) => {
     reset: () => {
       setCurrentTab("executive");
       setSelectedCategory(null);
+      setIsDemoActive(false);
+    },
+    startDemoFromHero: () => {
+      console.log('Demo started from Hero button');
+      setIsDemoActive(true);
     }
   }));
 
@@ -218,6 +224,54 @@ const DemoVideo = forwardRef<{ reset: () => void }>((_, ref) => {
       };
     }
   });
+
+  if (!isDemoActive) {
+    return (
+      <div className="w-full max-w-4xl mx-auto p-8 bg-gradient-card rounded-2xl border border-border shadow-elegant text-center">
+        <div className="space-y-6">
+          <div className="w-20 h-20 bg-primary/10 rounded-full mx-auto flex items-center justify-center">
+            <Play className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-foreground mb-2">Ready to Experience ZenFlux?</h3>
+            <p className="text-muted-foreground mb-6">
+              Click "Watch Demo" above to explore our comprehensive Finance AI Analytics Platform
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full" />
+                  <span>Real-time Cash Flow Forecasting</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-accent rounded-full" />
+                  <span>Multi-Currency Forex Analysis</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary-glow rounded-full" />
+                  <span>Executive Dashboard Overview</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full" />
+                  <span>Interactive Category Analysis</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-accent rounded-full" />
+                  <span>Working Capital Management</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary-glow rounded-full" />
+                  <span>AI Forecast Accuracy Tracking</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6 bg-gradient-card rounded-2xl border border-border shadow-elegant">
