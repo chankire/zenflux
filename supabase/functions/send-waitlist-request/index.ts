@@ -16,6 +16,66 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Rate limiting helper
+async function checkRateLimit(supabase: any, identifier: string, endpoint: string): Promise<boolean> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - 60000); // 1 minute window
+  
+  const { data: existingRequests } = await supabase
+    .from('rate_limits')
+    .select('requests_count')
+    .eq('identifier', identifier)
+    .eq('endpoint', endpoint)
+    .gte('window_start', windowStart.toISOString());
+
+  const totalRequests = existingRequests?.reduce((sum: number, record: any) => sum + record.requests_count, 0) || 0;
+  
+  if (totalRequests >= 5) { // Max 5 requests per minute
+    return false;
+  }
+
+  // Log this request
+  await supabase
+    .from('rate_limits')
+    .insert({
+      identifier,
+      endpoint,
+      requests_count: 1,
+      window_start: now.toISOString()
+    });
+
+  return true;
+}
+
+// Input validation helper
+function validateWaitlistRequest(data: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (!data.name || typeof data.name !== 'string' || data.name.trim().length < 2) {
+    errors.push('Name must be at least 2 characters long');
+  }
+  
+  if (!data.email || typeof data.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    errors.push('Valid email address is required');
+  }
+  
+  if (!data.company || typeof data.company !== 'string' || data.company.trim().length < 2) {
+    errors.push('Company name must be at least 2 characters long');
+  }
+  
+  if (!data.role || typeof data.role !== 'string' || data.role.trim().length < 2) {
+    errors.push('Role must be specified');
+  }
+  
+  // Sanitize inputs
+  if (data.name) data.name = data.name.trim().substring(0, 100);
+  if (data.email) data.email = data.email.trim().toLowerCase().substring(0, 255);
+  if (data.company) data.company = data.company.trim().substring(0, 100);
+  if (data.role) data.role = data.role.trim().substring(0, 50);
+  
+  return { isValid: errors.length === 0, errors };
+}
+
 interface WaitlistRequest {
   name: string;
   email: string;
@@ -29,7 +89,38 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, company, role }: WaitlistRequest = await req.json();
+    // Get client IP for rate limiting
+    const clientIP = req.headers.get('cf-connecting-ip') || 
+                     req.headers.get('x-forwarded-for') || 
+                     'unknown';
+
+    // Check rate limit
+    const isAllowed = await checkRateLimit(supabase, clientIP, 'waitlist-signup');
+    if (!isAllowed) {
+      return new Response(
+        JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+        { 
+          status: 429, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const waitlistData: WaitlistRequest = await req.json();
+    
+    // Validate input
+    const validation = validateWaitlistRequest(waitlistData);
+    if (!validation.isValid) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validation.errors }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const { name, email, company, role } = waitlistData;
 
     console.log("Received waitlist request:", { name, email, company, role });
 

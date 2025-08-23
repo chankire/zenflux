@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, Phone, Building } from "lucide-react";
+import { validateEmail, sanitizeInput, rateLimit, logSecurityEvent } from "@/lib/security";
 
 const ContactForm = () => {
   const [loading, setLoading] = useState(false);
@@ -21,11 +22,51 @@ const ContactForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Client-side rate limiting
+    if (!rateLimit.isAllowed('demo-request', 1, 300000)) { // 1 request per 5 minutes
+      toast({
+        title: "Too many attempts",
+        description: "Please wait a few minutes before trying again.",
+        variant: "destructive",
+      });
+      logSecurityEvent('rate_limit_exceeded', { form: 'demo-request' });
+      return;
+    }
+    
+    // Validate inputs
+    if (!validateEmail(formData.email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (formData.name.trim().length < 2 || formData.company.trim().length < 2) {
+      toast({
+        title: "Invalid input",
+        description: "Name and company must be at least 2 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {
+      // Sanitize inputs before sending
+      const sanitizedData = {
+        name: sanitizeInput(formData.name, 100),
+        email: sanitizeInput(formData.email, 255).toLowerCase(),
+        company: sanitizeInput(formData.company, 100),
+        phone: sanitizeInput(formData.phone, 20),
+        message: sanitizeInput(formData.message, 1000)
+      };
+      
       const { error } = await supabase.functions.invoke('send-demo-request', {
-        body: formData
+        body: sanitizedData
       });
 
       if (error) throw error;
@@ -34,6 +75,8 @@ const ContactForm = () => {
         title: "Demo request sent!",
         description: "We'll get back to you within 24 hours to schedule your personalized demo.",
       });
+      
+      logSecurityEvent('demo_request_success', { email: sanitizedData.email });
 
       // Reset form
       setFormData({
@@ -45,6 +88,7 @@ const ContactForm = () => {
       });
     } catch (error: any) {
       console.error('Error sending demo request:', error);
+      logSecurityEvent('demo_request_error', { error: error.message });
       toast({
         variant: "destructive",
         title: "Error sending request",
