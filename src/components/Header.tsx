@@ -69,12 +69,23 @@ const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
       <div className="container px-4 mx-auto">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* Logo - Clickable to go home */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">Z</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">ZenFlux</span>
+            <button 
+              onClick={() => {
+                if (navigate) {
+                  navigate("/");
+                } else {
+                  window.location.href = "/";
+                }
+              }}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">Z</span>
+              </div>
+              <span className="text-xl font-bold text-foreground">ZenFlux</span>
+            </button>
           </div>
           
           {/* Desktop Navigation */}

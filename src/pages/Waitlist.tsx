@@ -137,13 +137,26 @@ const Waitlist = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Join the ZenFlux Waitlist</CardTitle>
-          <CardDescription className="text-center">
-            Get early access to AI-powered cash flow forecasting that's 99% accurate, 1 year ahead.
-          </CardDescription>
-        </CardHeader>
+      <div className="w-full max-w-md space-y-4">
+        {/* Back to Home Button */}
+        <Button 
+          variant="ghost" 
+          asChild
+          className="mb-4"
+        >
+          <Link to="/">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+        </Button>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">Join the ZenFlux Waitlist</CardTitle>
+            <CardDescription className="text-center">
+              Get early access to AI-powered cash flow forecasting that's 99% accurate, 1 year ahead.
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -217,7 +230,8 @@ const Waitlist = () => {
             </p>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };

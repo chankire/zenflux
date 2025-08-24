@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
 import { 
   LayoutDashboard, 
   TrendingUp, 
@@ -12,7 +13,8 @@ import {
   DollarSign,
   BarChart3,
   Users,
-  Shield
+  Shield,
+  Home
 } from "lucide-react";
 
 interface NavigationItem {
@@ -75,6 +77,11 @@ const navigationItems: NavigationItem[] = [
 
 const NavigationSidebar = () => {
   const location = useLocation();
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <div className="flex flex-col h-full bg-sidebar border-r border-sidebar-border">
@@ -125,6 +132,14 @@ const NavigationSidebar = () => {
       {/* Bottom Section */}
       <div className="p-4 border-t border-sidebar-border space-y-2">
         <Link
+          to="/"
+          className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+        >
+          <Home className="h-5 w-5" />
+          <span className="font-medium">Back to Home</span>
+        </Link>
+        
+        <Link
           to="/settings"
           className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
         >
@@ -134,6 +149,7 @@ const NavigationSidebar = () => {
         
         <Button
           variant="ghost"
+          onClick={handleSignOut}
           className="w-full justify-start space-x-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           <LogOut className="h-5 w-5" />
