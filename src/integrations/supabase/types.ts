@@ -834,35 +834,21 @@ export type Database = {
       }
     }
     Views: {
-      financial_summary: {
-        Row: {
-          currency: string | null
-          organization_id: string | null
-          total_accounts: number | null
-          total_balance: number | null
-          total_expenses: number | null
-          total_income: number | null
-          transaction_count: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bank_accounts_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_bank_accounts_organization"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
+      get_financial_summary_for_org: {
+        Args: { org_id: string }
+        Returns: {
+          currency: string
+          organization_id: string
+          total_accounts: number
+          total_balance: number
+          total_expenses: number
+          total_income: number
+          transaction_count: number
+        }[]
+      }
       get_user_role_in_org: {
         Args: { org_id: string }
         Returns: string
