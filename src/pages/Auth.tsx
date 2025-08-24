@@ -19,6 +19,7 @@ interface AuthFormData {
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -48,7 +49,40 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (email: string) => {
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password reset email sent!",
+        description: "Check your email for a password reset link.",
+      });
+      
+      setIsForgotPassword(false);
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      toast({
+        variant: "destructive",
+        title: "Password reset failed",
+        description: error.message || "Failed to send password reset email.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const onSubmit = async (data: AuthFormData) => {
+    if (isForgotPassword) {
+      await handleForgotPassword(data.email);
+      return;
+    }
+
     setLoading(true);
     
     try {
@@ -131,44 +165,50 @@ const Auth = () => {
               </div>
             </div>
             <CardTitle className="text-2xl text-center">
-              {isSignUp ? "Create Your Account" : "Welcome Back"}
+              {isForgotPassword ? "Reset Your Password" : isSignUp ? "Create Your Account" : "Welcome Back"}
             </CardTitle>
             <CardDescription className="text-center">
-              {isSignUp ? "Start forecasting with AI in minutes" : "Sign in to continue to your dashboard"}
+              {isForgotPassword 
+                ? "Enter your email address and we'll send you a password reset link" 
+                : isSignUp 
+                ? "Start forecasting with AI in minutes" 
+                : "Sign in to continue to your dashboard"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Google Sign In */}
-            <div className="space-y-4 mb-6">
-              <Button 
-                type="button"
-                variant="outline" 
-                className="w-full" 
-                onClick={handleGoogleSignIn}
-                disabled={loading}
-              >
-                <Chrome className="w-4 h-4 mr-2" />
-                Continue with Google
-              </Button>
-              
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+            {/* Google Sign In - Hide in forgot password mode */}
+            {!isForgotPassword && (
+              <div className="space-y-4 mb-6">
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                >
+                  <Chrome className="w-4 h-4 mr-2" />
+                  Continue with Google
+                </Button>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {isSignUp && (
+              {isSignUp && !isForgotPassword && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
                     <Input
                       id="firstName"
-                      {...register("firstName", { required: isSignUp })}
+                      {...register("firstName", { required: isSignUp && !isForgotPassword })}
                       placeholder="John"
                     />
                     {errors.firstName && (
@@ -179,7 +219,7 @@ const Auth = () => {
                     <Label htmlFor="lastName">Last Name</Label>
                     <Input
                       id="lastName"
-                      {...register("lastName", { required: isSignUp })}
+                      {...register("lastName", { required: isSignUp && !isForgotPassword })}
                       placeholder="Doe"
                     />
                     {errors.lastName && (
@@ -208,45 +248,73 @@ const Auth = () => {
                 )}
               </div>
               
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 6,
-                      message: "Password must be at least 6 characters"
-                    }
-                  })}
-                  placeholder="••••••••"
-                />
-                {errors.password && (
-                  <p className="text-sm text-destructive mt-1">{errors.password.message}</p>
-                )}
-              </div>
+              {!isForgotPassword && (
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    {...register("password", {
+                      required: !isForgotPassword ? "Password is required" : false,
+                      minLength: {
+                        value: 6,
+                        message: "Password must be at least 6 characters"
+                      }
+                    })}
+                    placeholder="••••••••"
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-destructive mt-1">{errors.password.message}</p>
+                  )}
+                </div>
+              )}
               
               <Button type="submit" className="w-full" disabled={loading} variant="hero">
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSignUp ? "Create Account" : "Sign In"}
+                {isForgotPassword ? "Send Reset Email" : isSignUp ? "Create Account" : "Sign In"}
               </Button>
+              
+              {!isSignUp && !isForgotPassword && (
+                <div className="mt-2 text-center">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setIsForgotPassword(true)}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Forgot your password?
+                  </Button>
+                </div>
+              )}
             </form>
             
             <div className="mt-6 text-center">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  reset();
-                }}
-                className="text-sm"
-              >
-                {isSignUp 
-                  ? "Already have an account? Sign in" 
-                  : "Don't have an account? Sign up"
-                }
-              </Button>
+              {isForgotPassword ? (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    reset();
+                  }}
+                  className="text-sm"
+                >
+                  Back to sign in
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setIsForgotPassword(false);
+                    reset();
+                  }}
+                  className="text-sm"
+                >
+                  {isSignUp 
+                    ? "Already have an account? Sign in" 
+                    : "Don't have an account? Sign up"
+                  }
+                </Button>
+              )}
             </div>
 
             {isSignUp && (
