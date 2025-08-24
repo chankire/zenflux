@@ -106,7 +106,7 @@ const MultiBankVisibility = () => {
                 <ul className="list-disc list-inside mb-6 space-y-2">
                   <li><strong>Read-only access:</strong> APIs can't move money, only see balances and transactions</li>
                   <li><strong>Real-time updates:</strong> Balances refresh automatically throughout the day</li>
-                  <li><strong>Historical data:</strong> Import 12-24 months of transaction history instantly</li>
+                  <li><strong>Historical data:</strong> Import up to 12 months of transaction history instantly</li>
                   <li><strong>Multi-currency support:</strong> Handle USD, EUR, GBP, and other currencies seamlessly</li>
                 </ul>
 

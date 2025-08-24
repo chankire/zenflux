@@ -69,7 +69,7 @@ const TrustSection = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <div className="flex items-center gap-2 justify-center">
               <Zap className="w-5 h-5 text-primary" />
-              <span className="text-muted-foreground">2 years of runway visibility</span>
+              <span className="text-muted-foreground">1 year of runway visibility</span>
             </div>
             <div className="flex items-center gap-2 justify-center">
               <Zap className="w-5 h-5 text-primary" />

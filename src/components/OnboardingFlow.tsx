@@ -68,7 +68,7 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     setUploading(true);
     
     try {
-      // Create organization
+      // Create organization (trigger will auto-add membership)
       const { data: org, error: orgError } = await supabase
         .from("organizations")
         .insert({
@@ -80,17 +80,6 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
         .single();
 
       if (orgError) throw orgError;
-
-      // Add user as org owner
-      const { error: membershipError } = await supabase
-        .from("memberships")
-        .insert({
-          user_id: user?.id,
-          organization_id: org.id,
-          role: "org_owner"
-        });
-
-      if (membershipError) throw membershipError;
 
       toast({
         title: "Company setup complete!",

@@ -114,7 +114,7 @@ const Waitlist = () => {
               </Button>
               <Button 
                 onClick={() => {
-                  const shareText = "Check out ZenFlux - AI-powered cash flow forecasting that's 99% accurate 2 years out!";
+                  const shareText = "Check out ZenFlux - AI-powered cash flow forecasting that's 99% accurate 1 year out!";
                   const shareUrl = window.location.origin;
                   if (navigator.share) {
                     navigator.share({ title: "ZenFlux Demo", text: shareText, url: shareUrl });
@@ -141,7 +141,7 @@ const Waitlist = () => {
         <CardHeader>
           <CardTitle className="text-2xl text-center">Join the ZenFlux Waitlist</CardTitle>
           <CardDescription className="text-center">
-            Get early access to AI-powered cash flow forecasting that's 99% accurate, 2 years ahead.
+            Get early access to AI-powered cash flow forecasting that's 99% accurate, 1 year ahead.
           </CardDescription>
         </CardHeader>
         <CardContent>

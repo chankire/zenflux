@@ -10,7 +10,7 @@ const Pricing = () => {
       period: "/mo",
       description: "For founders < $1M ARR",
       features: [
-        "2-year cash flow forecasting",
+        "1-year cash flow forecasting",
         "99% forecast accuracy",
         "Basic AI insights",
         "Email support",

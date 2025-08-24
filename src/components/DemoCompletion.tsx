@@ -7,7 +7,7 @@ const DemoCompletion = () => {
   const { toast } = useToast();
 
   const handleShareDemo = () => {
-    const shareText = "Check out ZenFlux - AI-powered cash flow forecasting that's 99% accurate 2 years out!";
+    const shareText = "Check out ZenFlux - AI-powered cash flow forecasting that's 99% accurate 1 year out!";
     const shareUrl = window.location.origin;
     
     if (navigator.share) {
@@ -33,7 +33,7 @@ const DemoCompletion = () => {
         </div>
         <CardTitle className="text-2xl text-foreground">✅ Demo Complete!</CardTitle>
         <p className="text-muted-foreground">
-          You've experienced ZenFlux's 2-year rolling forecast accuracy and AI-powered insights.
+          You've experienced ZenFlux's 1-year rolling forecast accuracy and AI-powered insights.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -61,7 +61,7 @@ const DemoCompletion = () => {
         <div className="pt-4 border-t">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center text-sm">
             <div>
-              <div className="font-semibold text-primary">2 Years</div>
+              <div className="font-semibold text-primary">1 Year</div>
               <div className="text-muted-foreground">Forecast Range</div>
             </div>
             <div>

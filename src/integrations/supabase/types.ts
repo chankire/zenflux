@@ -477,6 +477,36 @@ export type Database = {
           },
         ]
       }
+      kpis: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          organization_id: string
+          target: number
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          organization_id: string
+          target?: number
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          target?: number
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       memberships: {
         Row: {
           created_at: string

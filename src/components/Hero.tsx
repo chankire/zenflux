@@ -57,7 +57,7 @@ const Hero = () => {
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground mb-12 font-light max-w-4xl mx-auto">
-            ZenFlux helps founders and CFOs forecast with 99% accuracy — 2 years ahead — in minutes, not weeks.
+            ZenFlux helps founders and CFOs forecast with 99% accuracy — 1 year ahead — in minutes, not weeks.
           </p>
           
           {/* CTAs */}
