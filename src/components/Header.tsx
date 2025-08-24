@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, LogOut, User } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,15 +15,47 @@ import {
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  
+  // Safely handle navigation - use window.location as fallback
+  let navigate;
+  try {
+    navigate = useNavigate();
+  } catch {
+    // If useNavigate fails (not in Router context), use window.location
+    navigate = null;
+  }
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/");
+    if (navigate) {
+      navigate("/");
+    } else {
+      window.location.href = "/";
+    }
   };
 
   const goToDashboard = () => {
-    navigate("/dashboard");
+    if (navigate) {
+      navigate("/dashboard");
+    } else {
+      window.location.href = "/dashboard";
+    }
+  };
+
+  const goToAuth = () => {
+    if (navigate) {
+      navigate("/auth");
+    } else {
+      window.location.href = "/auth";
+    }
+  };
+
+  const goToWaitlist = () => {
+    if (navigate) {
+      navigate("/waitlist");
+    } else {
+      window.location.href = "/waitlist";
+    }
   };
 
   const navItems = [
@@ -86,8 +118,8 @@ const Header = () => {
               </>
             ) : (
               <>
-                <Button variant="ghost" onClick={() => window.location.href = '/auth'}>Sign In</Button>
-                <Button variant="hero" onClick={() => window.location.href = '/waitlist'}>Get Access</Button>
+                <Button variant="ghost" onClick={goToAuth}>Sign In</Button>
+                <Button variant="hero" onClick={goToWaitlist}>Get Access</Button>
               </>
             )}
           </div>
@@ -130,8 +162,8 @@ const Header = () => {
                   </>
                 ) : (
                   <>
-                    <Button variant="ghost" className="justify-start" onClick={() => window.location.href = '/auth'}>Sign In</Button>
-                    <Button variant="default" className="justify-start" onClick={() => window.location.href = '/auth'}>Start Free Trial</Button>
+                    <Button variant="ghost" className="justify-start" onClick={goToAuth}>Sign In</Button>
+                    <Button variant="default" className="justify-start" onClick={goToAuth}>Start Free Trial</Button>
                   </>
                 )}
               </div>
