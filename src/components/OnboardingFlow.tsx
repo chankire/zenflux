@@ -68,18 +68,60 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     setUploading(true);
     
     try {
-      // Create organization (trigger will auto-add membership)
+      // 1. Check user authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        throw new Error('User not authenticated. Please log in again.');
+      }
+
+      console.log('User authenticated:', user.id);
+
+      // 2. Generate a clean slug
+      const slug = organizationData.name
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special chars except spaces and hyphens
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+
+      console.log('Generated slug:', slug);
+
+      // 3. Create organization
       const { data: org, error: orgError } = await supabase
         .from("organizations")
         .insert({
-          name: organizationData.name,
+          name: organizationData.name.trim(),
           base_currency: organizationData.currency,
-          slug: organizationData.name.toLowerCase().replace(/[^a-z0-9]/g, '-')
+          slug: slug || 'organization' // Fallback slug if empty
         })
         .select()
         .single();
 
-      if (orgError) throw orgError;
+      if (orgError) {
+        console.error('Organization creation error:', orgError);
+        throw orgError;
+      }
+
+      console.log('Organization created:', org);
+
+      // 4. Create membership manually (don't rely on triggers)
+      const { error: membershipError } = await supabase
+        .from("memberships")
+        .insert({
+          user_id: user.id,
+          organization_id: org.id,
+          role: 'org_owner'
+        });
+
+      if (membershipError) {
+        console.error('Membership creation error:', membershipError);
+        // Don't throw here - org was created successfully
+        console.warn('Organization created but membership failed. User may need to be added manually.');
+      } else {
+        console.log('Membership created successfully');
+      }
 
       toast({
         title: "Company setup complete!",
@@ -88,7 +130,7 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
 
       setCurrentStep(2);
     } catch (error: any) {
-      console.error('Error creating organization:', error);
+      console.error('Error in company setup:', error);
       toast({
         title: "Setup failed",
         description: error.message || "Failed to create organization. Please try again.",
