@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useForm } from "react-hook-form";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { Chrome, Mail, ArrowLeft, Loader2 } from "lucide-react";
 
 interface AuthFormData {
   email: string;
@@ -22,74 +23,87 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const form = useForm<AuthFormData>({
-    defaultValues: {
-      email: '',
-      password: '',
-      firstName: '',
-      lastName: '',
-    },
-  });
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<AuthFormData>();
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Google sign-in error:', error);
+      toast({
+        variant: "destructive",
+        title: "Google sign-in failed",
+        description: error.message || "Failed to sign in with Google.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onSubmit = async (data: AuthFormData) => {
     setLoading(true);
     
     try {
       if (isSignUp) {
+        const redirectUrl = `${window.location.origin}/dashboard`;
+        
         const { error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: redirectUrl,
             data: {
               first_name: data.firstName,
               last_name: data.lastName,
-            },
-          },
+            }
+          }
         });
 
-        if (error) {
-          if (error.message.includes('User already registered')) {
-            toast({
-              variant: 'destructive',
-              title: 'Account already exists',
-              description: 'An account with this email already exists. Please sign in instead.',
-            });
-            setIsSignUp(false);
-          } else {
-            throw error;
-          }
-        } else {
-          toast({
-            title: 'Check your email',
-            description: 'We sent you a confirmation link to complete your registration.',
-          });
-        }
+        if (error) throw error;
+
+        toast({
+          title: "Account created!",
+          description: "Please check your email to verify your account and complete setup.",
+        });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
 
-        if (error) {
-          if (error.message.includes('Invalid login credentials')) {
-            toast({
-              variant: 'destructive',
-              title: 'Invalid credentials',
-              description: 'Please check your email and password and try again.',
-            });
-          } else {
-            throw error;
-          }
-        } else {
-          navigate('/');
-        }
+        if (error) throw error;
+
+        toast({
+          title: "Welcome back!",
+          description: "You have been signed in successfully.",
+        });
+        
+        navigate("/dashboard");
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
+      let errorMessage = "An error occurred during authentication.";
+      
+      if (error.message.includes("User already registered")) {
+        errorMessage = "This email is already registered. Try signing in instead.";
+      } else if (error.message.includes("Invalid login credentials")) {
+        errorMessage = "Invalid email or password. Please try again.";
+      } else if (error.message.includes("Email not confirmed")) {
+        errorMessage = "Please check your email and click the confirmation link.";
+      }
+      
       toast({
-        variant: 'destructive',
-        title: 'Authentication error',
-        description: error.message || 'An unexpected error occurred.',
+        variant: "destructive",
+        title: "Authentication failed",
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
@@ -97,118 +111,155 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">Z</span>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-4">
+        {/* Back to Home */}
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate("/")}
+          className="mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
+
+        <Card>
+          <CardHeader>
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-lg">Z</span>
+              </div>
             </div>
-            <span className="text-xl font-bold text-foreground">ZenFlux</span>
-          </div>
-          <CardTitle>{isSignUp ? 'Create Account' : 'Welcome Back'}</CardTitle>
-          <CardDescription>
-            {isSignUp 
-              ? 'Create your ZenFlux account to get started' 
-              : 'Sign in to access your cash visibility dashboard'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <CardTitle className="text-2xl text-center">
+              {isSignUp ? "Create Your Account" : "Welcome Back"}
+            </CardTitle>
+            <CardDescription className="text-center">
+              {isSignUp ? "Start forecasting with AI in minutes" : "Sign in to continue to your dashboard"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Google Sign In */}
+            <div className="space-y-4 mb-6">
+              <Button 
+                type="button"
+                variant="outline" 
+                className="w-full" 
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+              >
+                <Chrome className="w-4 h-4 mr-2" />
+                Continue with Google
+              </Button>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {isSignUp && (
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="John" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div>
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      {...register("firstName", { required: isSignUp })}
+                      placeholder="John"
+                    />
+                    {errors.firstName && (
+                      <p className="text-sm text-destructive mt-1">First name is required</p>
                     )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      {...register("lastName", { required: isSignUp })}
+                      placeholder="Doe"
+                    />
+                    {errors.lastName && (
+                      <p className="text-sm text-destructive mt-1">Last name is required</p>
                     )}
-                  />
+                  </div>
                 </div>
               )}
               
-              <FormField
-                control={form.control}
-                name="email"
-                rules={{
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address',
-                  },
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="your@email.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address"
+                    }
+                  })}
+                  placeholder="your@email.com"
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
                 )}
-              />
+              </div>
               
-              <FormField
-                control={form.control}
-                name="password"
-                rules={{
-                  required: 'Password is required',
-                  minLength: {
-                    value: 6,
-                    message: 'Password must be at least 6 characters',
-                  },
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters"
+                    }
+                  })}
+                  placeholder="••••••••"
+                />
+                {errors.password && (
+                  <p className="text-sm text-destructive mt-1">{errors.password.message}</p>
                 )}
-              />
+              </div>
               
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading} variant="hero">
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSignUp ? 'Create Account' : 'Sign In'}
+                {isSignUp ? "Create Account" : "Sign In"}
               </Button>
             </form>
-          </Form>
-          
-          <div className="mt-6 text-center">
-            <Button 
-              variant="link" 
-              className="text-sm"
-              onClick={() => setIsSignUp(!isSignUp)}
-            >
-              {isSignUp 
-                ? 'Already have an account? Sign in' 
-                : "Don't have an account? Sign up"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            
+            <div className="mt-6 text-center">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  reset();
+                }}
+                className="text-sm"
+              >
+                {isSignUp 
+                  ? "Already have an account? Sign in" 
+                  : "Don't have an account? Sign up"
+                }
+              </Button>
+            </div>
+
+            {isSignUp && (
+              <Alert className="mt-4">
+                <Mail className="h-4 w-4" />
+                <AlertDescription>
+                  By creating an account, you'll be guided through a quick setup to connect your financial data and generate your first AI-powered forecast.
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
