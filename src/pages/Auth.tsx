@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,16 +15,30 @@ interface AuthFormData {
   password: string;
   firstName?: string;
   lastName?: string;
+  newPassword?: string;
+  confirmPassword?: string;
 }
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isResetPassword, setIsResetPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<AuthFormData>();
+
+  useEffect(() => {
+    // Detect password recovery flow from Supabase email link
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+    const type = hashParams.get('type');
+    if (type === 'recovery') {
+      setIsResetPassword(true);
+      setIsSignUp(false);
+      setIsForgotPassword(false);
+    }
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -78,17 +92,47 @@ const Auth = () => {
   };
 
   const onSubmit = async (data: AuthFormData) => {
+    // Handle reset password flow
+    if (isResetPassword) {
+      if (!data.newPassword || !data.confirmPassword) {
+        toast({ variant: "destructive", title: "Missing password", description: "Please enter and confirm your new password." });
+        return;
+      }
+      if (data.newPassword !== data.confirmPassword) {
+        toast({ variant: "destructive", title: "Passwords do not match", description: "Make sure both passwords are the same." });
+        return;
+      }
+      setLoading(true);
+      try {
+        const { error } = await supabase.auth.updateUser({ password: data.newPassword });
+        if (error) throw error;
+
+        // Clean up URL hash tokens after successful reset
+        try {
+          window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+        } catch {}
+
+        toast({ title: "Password updated", description: "Your password has been changed successfully." });
+        setIsResetPassword(false);
+        navigate("/dashboard");
+      } catch (error: any) {
+        console.error('Password update error:', error);
+        toast({ variant: "destructive", title: "Update failed", description: error.message || "Could not update password." });
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (isForgotPassword) {
       await handleForgotPassword(data.email);
       return;
     }
 
     setLoading(true);
-    
     try {
       if (isSignUp) {
         const redirectUrl = `${window.location.origin}/dashboard`;
-        
         const { error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
@@ -100,45 +144,25 @@ const Auth = () => {
             }
           }
         });
-
         if (error) throw error;
-
-        toast({
-          title: "Account created!",
-          description: "Please check your email to verify your account and complete setup.",
-        });
+        toast({ title: "Account created!", description: "Please check your email to verify your account and complete setup." });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: data.email,
-          password: data.password,
-        });
-
+        const { error } = await supabase.auth.signInWithPassword({ email: data.email, password: data.password });
         if (error) throw error;
-
-        toast({
-          title: "Welcome back!",
-          description: "You have been signed in successfully.",
-        });
-        
+        toast({ title: "Welcome back!", description: "You have been signed in successfully." });
         navigate("/dashboard");
       }
     } catch (error: any) {
       console.error('Auth error:', error);
       let errorMessage = "An error occurred during authentication.";
-      
-      if (error.message.includes("User already registered")) {
+      if (error.message?.includes("User already registered")) {
         errorMessage = "This email is already registered. Try signing in instead.";
-      } else if (error.message.includes("Invalid login credentials")) {
+      } else if (error.message?.includes("Invalid login credentials")) {
         errorMessage = "Invalid email or password. Please try again.";
-      } else if (error.message.includes("Email not confirmed")) {
+      } else if (error.message?.includes("Email not confirmed")) {
         errorMessage = "Please check your email and click the confirmation link.";
       }
-      
-      toast({
-        variant: "destructive",
-        title: "Authentication failed",
-        description: errorMessage,
-      });
+      toast({ variant: "destructive", title: "Authentication failed", description: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -165,19 +189,27 @@ const Auth = () => {
               </div>
             </div>
             <CardTitle className="text-2xl text-center">
-              {isForgotPassword ? "Reset Your Password" : isSignUp ? "Create Your Account" : "Welcome Back"}
+              {isResetPassword
+                ? "Set a New Password"
+                : isForgotPassword
+                ? "Reset Your Password"
+                : isSignUp
+                ? "Create Your Account"
+                : "Welcome Back"}
             </CardTitle>
             <CardDescription className="text-center">
-              {isForgotPassword 
-                ? "Enter your email address and we'll send you a password reset link" 
-                : isSignUp 
-                ? "Start forecasting with AI in minutes" 
+              {isResetPassword
+                ? "Enter and confirm your new password to complete the reset"
+                : isForgotPassword
+                ? "Enter your email address and we'll send you a password reset link"
+                : isSignUp
+                ? "Start forecasting with AI in minutes"
                 : "Sign in to continue to your dashboard"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {/* Google Sign In - Hide in forgot password mode */}
-            {!isForgotPassword && (
+            {!isForgotPassword && !isResetPassword && (
               <div className="space-y-4 mb-6">
                 <Button 
                   type="button"
@@ -229,26 +261,28 @@ const Auth = () => {
                 </div>
               )}
               
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email address"
-                    }
-                  })}
-                  placeholder="your@email.com"
-                />
-                {errors.email && (
-                  <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
-                )}
-              </div>
+              {!isResetPassword && (
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: "Invalid email address"
+                      }
+                    })}
+                    placeholder="your@email.com"
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
+                  )}
+                </div>
+              )}
               
-              {!isForgotPassword && (
+              {!isForgotPassword && !isResetPassword && (
                 <div>
                   <Label htmlFor="password">Password</Label>
                   <Input
@@ -268,13 +302,45 @@ const Auth = () => {
                   )}
                 </div>
               )}
+
+              {isResetPassword && (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="newPassword">New Password</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      {...register("newPassword", {
+                        required: "New password is required",
+                        minLength: { value: 6, message: "Password must be at least 6 characters" }
+                      })}
+                      placeholder="••••••••"
+                    />
+                    {errors.newPassword && (
+                      <p className="text-sm text-destructive mt-1">{errors.newPassword.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      {...register("confirmPassword", { required: "Please confirm your new password" })}
+                      placeholder="••••••••"
+                    />
+                    {errors.confirmPassword && (
+                      <p className="text-sm text-destructive mt-1">{errors.confirmPassword.message}</p>
+                    )}
+                  </div>
+                </div>
+              )}
               
               <Button type="submit" className="w-full" disabled={loading} variant="hero">
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isForgotPassword ? "Send Reset Email" : isSignUp ? "Create Account" : "Sign In"}
+                {isResetPassword ? "Update Password" : isForgotPassword ? "Send Reset Email" : isSignUp ? "Create Account" : "Sign In"}
               </Button>
               
-              {!isSignUp && !isForgotPassword && (
+              {!isSignUp && !isForgotPassword && !isResetPassword && (
                 <div className="mt-2 text-center">
                   <Button
                     variant="ghost"
@@ -288,11 +354,15 @@ const Auth = () => {
             </form>
             
             <div className="mt-6 text-center">
-              {isForgotPassword ? (
+              {isForgotPassword || isResetPassword ? (
                 <Button
                   variant="ghost"
                   onClick={() => {
                     setIsForgotPassword(false);
+                    setIsResetPassword(false);
+                    try {
+                      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                    } catch {}
                     reset();
                   }}
                   className="text-sm"
