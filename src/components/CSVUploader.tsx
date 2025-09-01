@@ -109,6 +109,8 @@ const CSVUploader = ({ onUploadComplete }: CSVUploaderProps) => {
     setStep('upload');
     setProgress(0);
 
+    let fileUploadId: string | null = null;
+
     try {
       // Get user's organization
       const { data: memberships } = await supabase
@@ -123,14 +125,42 @@ const CSVUploader = ({ onUploadComplete }: CSVUploaderProps) => {
 
       const organizationId = memberships[0].organization_id;
 
+      // Create file upload record
+      const { data: fileUpload, error: uploadError } = await supabase
+        .from('file_uploads')
+        .insert({
+          organization_id: organizationId,
+          uploaded_by: user?.id,
+          original_filename: file.name,
+          file_size_bytes: file.size,
+          file_type: 'csv',
+          content_type: file.type,
+          upload_source: 'csv_uploader',
+          upload_category: 'transaction_data',
+          status: 'processing',
+          processing_started_at: new Date().toISOString(),
+        })
+        .select('id')
+        .single();
+
+      if (uploadError) throw uploadError;
+      fileUploadId = fileUpload.id;
+
       const reader = new FileReader();
       reader.onload = async (event) => {
+        let successfulRows = 0;
+        let failedRows = 0;
+        let transactionDateFrom: string | null = null;
+        let transactionDateTo: string | null = null;
+
         try {
           const text = event.target?.result as string;
           const lines = text.split('\n').filter(line => line.trim());
           const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
           
           const transactions = [];
+          const validationErrors = [];
+          
           for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
             const row: any = {};
@@ -144,9 +174,19 @@ const CSVUploader = ({ onUploadComplete }: CSVUploaderProps) => {
             const description = row[mapping.description];
 
             if (dateValue && !isNaN(amountValue) && description) {
+              const transactionDate = new Date(dateValue).toISOString().split('T')[0];
+              
+              // Track date range
+              if (!transactionDateFrom || transactionDate < transactionDateFrom) {
+                transactionDateFrom = transactionDate;
+              }
+              if (!transactionDateTo || transactionDate > transactionDateTo) {
+                transactionDateTo = transactionDate;
+              }
+              
               transactions.push({
                 organization_id: organizationId,
-                value_date: new Date(dateValue).toISOString().split('T')[0],
+                value_date: transactionDate,
                 amount: amountValue,
                 memo: description,
                 counterparty: description,
@@ -154,6 +194,15 @@ const CSVUploader = ({ onUploadComplete }: CSVUploaderProps) => {
                 category_id: null,
                 bank_account_id: null,
                 is_forecast: false,
+                file_upload_id: fileUploadId,
+              });
+              successfulRows++;
+            } else {
+              failedRows++;
+              validationErrors.push({
+                row: i + 1,
+                error: 'Missing or invalid required fields (date, amount, description)',
+                data: row
               });
             }
 
@@ -172,14 +221,58 @@ const CSVUploader = ({ onUploadComplete }: CSVUploaderProps) => {
             if (error) throw error;
           }
 
+          // Update file upload record with success
+          await supabase
+            .from('file_uploads')
+            .update({
+              status: failedRows > 0 && successfulRows === 0 ? 'failed' : 
+                     failedRows > 0 ? 'partially_failed' : 'completed',
+              total_rows_processed: lines.length - 1,
+              successful_rows: successfulRows,
+              failed_rows: failedRows,
+              transaction_date_from: transactionDateFrom,
+              transaction_date_to: transactionDateTo,
+              validation_errors: validationErrors,
+              processing_completed_at: new Date().toISOString(),
+            })
+            .eq('id', fileUploadId);
+
+          // Log security event
+          await supabase.rpc('log_security_event', {
+            event_type: 'file_upload_completed',
+            event_details: {
+              file_upload_id: fileUploadId,
+              filename: file.name,
+              file_size: file.size,
+              transactions_imported: successfulRows,
+              validation_errors: failedRows,
+            }
+          });
+
           toast({
             title: "Upload successful!",
-            description: `Imported ${transactions.length} transactions successfully.`,
+            description: `Imported ${successfulRows} transactions successfully${failedRows > 0 ? ` (${failedRows} rows had errors)` : ''}.`,
           });
 
           onUploadComplete?.();
         } catch (error: any) {
           console.error('Upload error:', error);
+          
+          // Update file upload record with error
+          if (fileUploadId) {
+            await supabase
+              .from('file_uploads')
+              .update({
+                status: 'failed',
+                total_rows_processed: lines?.length ? lines.length - 1 : 0,
+                successful_rows: successfulRows,
+                failed_rows: failedRows,
+                error_message: error.message,
+                processing_completed_at: new Date().toISOString(),
+              })
+              .eq('id', fileUploadId);
+          }
+          
           toast({
             title: "Upload failed",
             description: error.message || "Failed to import transactions.",
@@ -192,6 +285,19 @@ const CSVUploader = ({ onUploadComplete }: CSVUploaderProps) => {
       reader.readAsText(file);
     } catch (error: any) {
       console.error('Upload error:', error);
+      
+      // Update file upload record with error if it was created
+      if (fileUploadId) {
+        await supabase
+          .from('file_uploads')
+          .update({
+            status: 'failed',
+            error_message: error.message,
+            processing_completed_at: new Date().toISOString(),
+          })
+          .eq('id', fileUploadId);
+      }
+      
       toast({
         title: "Upload failed",
         description: error.message || "Failed to import transactions.",

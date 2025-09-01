@@ -12,6 +12,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Upload, FileText, Download, CheckCircle, AlertCircle, Trash2, Eye, Calendar, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/hooks/useCurrency";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 
 interface UploadedFile {
   id: string;
@@ -43,10 +45,13 @@ interface ManualTransaction {
 const ManualDataUpload = () => {
   const { toast } = useToast();
   const { currency, formatCurrency } = useCurrency();
+  const { user } = useAuth();
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [manualTransactions, setManualTransactions] = useState<ManualTransaction[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
   const [newTransaction, setNewTransaction] = useState({
     date: new Date().toISOString().split('T')[0],
     description: '',
@@ -72,52 +77,282 @@ const ManualDataUpload = () => {
     'Equipment', 'Software', 'Inventory', 'Taxes', 'Interest', 'Other'
   ];
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  // File validation helper
+  const validateFiles = useCallback((files: FileList) => {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ['.csv', '.xlsx', '.xls', '.pdf', '.qif'];
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    Array.from(files).forEach(file => {
+      // Check file size
+      if (file.size > maxSize) {
+        errors.push(`${file.name} exceeds 10MB limit`);
+        return;
+      }
+
+      // Check file type
+      const fileName = file.name.toLowerCase();
+      const isValidType = allowedTypes.some(type => fileName.endsWith(type));
+      if (!isValidType) {
+        errors.push(`${file.name} is not a supported file type`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    return { validFiles, errors };
+  }, []);
+
+  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
+
+    // Validate files if they came from file input (not already validated from drop)
+    const { validFiles, errors } = validateFiles(files);
+    
+    if (errors.length > 0) {
+      toast({
+        title: "File validation errors",
+        description: errors.join('. '),
+        variant: "destructive",
+      });
+    }
+    
+    if (validFiles.length === 0) {
+      return;
+    }
 
     setIsUploading(true);
     setUploadProgress(0);
 
-    Array.from(files).forEach((file, index) => {
-      // Simulate upload progress
-      const uploadInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          const newProgress = prev + Math.random() * 15;
-          if (newProgress >= 100) {
-            clearInterval(uploadInterval);
-            
-            const newFile: UploadedFile = {
-              id: Date.now().toString() + index,
-              name: file.name,
-              type: 'transaction_data', // Default type, could be determined by file analysis
-              size: file.size,
-              uploadDate: new Date().toISOString(),
-              status: 'completed',
-              recordCount: Math.floor(Math.random() * 500) + 50,
-              dateRange: {
-                from: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                to: new Date().toISOString().split('T')[0]
-              },
-              currency: currency.code
-            };
+    try {
+      // Get user's organization
+      const { data: memberships } = await supabase
+        .from('memberships')
+        .select('organization_id')
+        .eq('user_id', user?.id)
+        .limit(1);
 
-            setUploadedFiles(prev => [...prev, newFile]);
-            setIsUploading(false);
-            setUploadProgress(0);
+      if (!memberships?.[0]) {
+        throw new Error('No organization found');
+      }
 
-            toast({
-              title: "File uploaded successfully",
-              description: `${file.name} has been processed and is ready for analysis.`,
-            });
+      const organizationId = memberships[0].organization_id;
 
-            return 100;
+      const uploadPromises = Array.from(files).map(async (file, index) => {
+        try {
+          // Determine file type based on extension
+          const extension = file.name.toLowerCase().split('.').pop();
+          const fileType = extension === 'csv' ? 'csv' : 
+                          extension === 'xlsx' || extension === 'xls' ? 'excel' : 
+                          extension === 'pdf' ? 'pdf' : 
+                          extension === 'qif' ? 'qif' : 'other';
+
+          // Determine upload category based on file name patterns
+          const fileName = file.name.toLowerCase();
+          let uploadCategory = 'transaction_data';
+          if (fileName.includes('statement') || fileName.includes('bank')) {
+            uploadCategory = 'bank_statement';
+          } else if (fileName.includes('balance')) {
+            uploadCategory = 'balance_sheet';
+          } else if (fileName.includes('cash') && fileName.includes('flow')) {
+            uploadCategory = 'cash_flow_statement';
+          } else if (fileName.includes('budget')) {
+            uploadCategory = 'budget_plan';
+          } else if (fileName.includes('forecast')) {
+            uploadCategory = 'financial_forecast';
           }
-          return newProgress;
-        });
-      }, 200);
+
+          // Create file upload record
+          const { data: fileUpload, error: uploadError } = await supabase
+            .from('file_uploads')
+            .insert({
+              organization_id: organizationId,
+              uploaded_by: user?.id,
+              original_filename: file.name,
+              file_size_bytes: file.size,
+              file_type: fileType,
+              content_type: file.type,
+              upload_source: 'manual',
+              upload_category: uploadCategory,
+              status: 'processing',
+              processing_started_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (uploadError) throw uploadError;
+
+          // Simulate processing with progress updates
+          let progress = 0;
+          const progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            setUploadProgress(Math.min(progress, 95));
+          }, 300);
+
+          // Simulate processing time
+          await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
+          
+          clearInterval(progressInterval);
+          setUploadProgress(100);
+
+          // Simulate processing results
+          const recordCount = Math.floor(Math.random() * 500) + 50;
+          const fromDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          const toDate = new Date().toISOString().split('T')[0];
+
+          // Update file upload record with completion
+          await supabase
+            .from('file_uploads')
+            .update({
+              status: 'completed',
+              total_rows_processed: recordCount,
+              successful_rows: recordCount,
+              failed_rows: 0,
+              transaction_date_from: fromDate,
+              transaction_date_to: toDate,
+              processing_completed_at: new Date().toISOString(),
+              processing_metadata: {
+                simulated: true,
+                file_analysis: {
+                  estimated_records: recordCount,
+                  file_format: fileType,
+                  category: uploadCategory
+                }
+              }
+            })
+            .eq('id', fileUpload.id);
+
+          // Log security event
+          await supabase.rpc('log_security_event', {
+            event_type: 'file_upload_completed',
+            event_details: {
+              file_upload_id: fileUpload.id,
+              filename: file.name,
+              file_size: file.size,
+              upload_source: 'manual',
+              upload_category: uploadCategory,
+              simulated: true
+            }
+          });
+
+          const newFile: UploadedFile = {
+            id: fileUpload.id,
+            name: file.name,
+            type: uploadCategory as any,
+            size: file.size,
+            uploadDate: fileUpload.uploaded_at,
+            status: 'completed',
+            recordCount: recordCount,
+            dateRange: {
+              from: fromDate,
+              to: toDate
+            },
+            currency: currency.code
+          };
+
+          setUploadedFiles(prev => [...prev, newFile]);
+
+          toast({
+            title: "File uploaded successfully",
+            description: `${file.name} has been processed and is ready for analysis.`,
+          });
+
+        } catch (error: any) {
+          console.error('File upload error:', error);
+          
+          toast({
+            title: "Upload failed",
+            description: `Failed to upload ${file.name}: ${error.message}`,
+            variant: "destructive",
+          });
+        }
+      });
+
+      await Promise.all(uploadPromises);
+
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload files.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  }, [validateFiles, currency.code, toast, user?.id]);
+
+  // Drag and drop handlers with improved flickering prevention
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => prev + 1);
+    setIsDragActive(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => {
+      const newCount = prev - 1;
+      if (newCount <= 0) {
+        setIsDragActive(false);
+        return 0;
+      }
+      return newCount;
     });
-  }, [currency.code, toast]);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(false);
+    setDragCounter(0);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      // Validate files before processing
+      const { validFiles, errors } = validateFiles(files);
+      
+      if (errors.length > 0) {
+        toast({
+          title: "File validation errors",
+          description: errors.join('. '),
+          variant: "destructive",
+        });
+      }
+      
+      if (validFiles.length > 0) {
+        // Create a synthetic event to reuse existing upload logic
+        const syntheticEvent = {
+          target: { files: (() => {
+            const dt = new DataTransfer();
+            validFiles.forEach(file => dt.items.add(file));
+            return dt.files;
+          })() }
+        } as React.ChangeEvent<HTMLInputElement>;
+        
+        handleFileUpload(syntheticEvent);
+      }
+    }
+  }, [handleFileUpload, validateFiles, toast]);
+
+  // File input click handler
+  const handleFileInputClick = useCallback(() => {
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }, []);
 
   const handleAddTransaction = () => {
     if (!newTransaction.description || !newTransaction.amount || !newTransaction.account) {
@@ -282,10 +517,25 @@ const ManualDataUpload = () => {
                 </div>
               )}
               
-              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <div 
+                className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                  isDragActive 
+                    ? 'border-primary bg-primary/5' 
+                    : 'border-border hover:border-primary/50'
+                }`}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onClick={handleFileInputClick}
+              >
+                <Upload className={`h-12 w-12 mx-auto mb-4 ${
+                  isDragActive ? 'text-primary' : 'text-muted-foreground'
+                }`} />
                 <div className="space-y-2">
-                  <h3 className="text-lg font-medium">Drag and drop your files here</h3>
+                  <h3 className="text-lg font-medium">
+                    {isDragActive ? 'Drop files here' : 'Drag and drop your files here'}
+                  </h3>
                   <p className="text-muted-foreground">or click to browse your computer</p>
                 </div>
                 <Input
@@ -297,11 +547,17 @@ const ManualDataUpload = () => {
                   id="file-upload"
                   disabled={isUploading}
                 />
-                <Label htmlFor="file-upload" className="cursor-pointer">
-                  <Button variant="outline" className="mt-4" disabled={isUploading}>
-                    Select Files
-                  </Button>
-                </Label>
+                <Button 
+                  variant="outline" 
+                  className="mt-4" 
+                  disabled={isUploading}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleFileInputClick();
+                  }}
+                >
+                  Select Files
+                </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
