@@ -77,14 +77,14 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
 
       console.log('User authenticated:', user.id);
 
-      // 2. Generate a clean slug
-      const slug = organizationData.name
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s-]/g, '') // Remove special chars except spaces and hyphens
-        .replace(/\s+/g, '-') // Replace spaces with hyphens
-        .replace(/-+/g, '-') // Replace multiple hyphens with single
-        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+      // 2. Generate unique slug using database function
+      const { data: slug, error: slugError } = await supabase
+        .rpc('generate_org_slug', { org_name: organizationData.name.trim() });
+      
+      if (slugError) {
+        console.error('Slug generation error:', slugError);
+        throw new Error('Failed to generate organization slug');
+      }
 
       console.log('Generated slug:', slug);
 
@@ -93,8 +93,13 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
         .from("organizations")
         .insert({
           name: organizationData.name.trim(),
+          slug: slug,
           base_currency: organizationData.currency,
-          slug: slug || 'organization' // Fallback slug if empty
+          created_by: user.id,
+          settings: {
+            currency: organizationData.currency,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          }
         })
         .select()
         .single();

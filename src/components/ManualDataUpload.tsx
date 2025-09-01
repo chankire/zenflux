@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/hooks/useCurrency";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useSecurity, validateFile } from "@/lib/security";
 
 interface UploadedFile {
   id: string;
@@ -46,6 +47,7 @@ const ManualDataUpload = () => {
   const { toast } = useToast();
   const { currency, formatCurrency } = useCurrency();
   const { user } = useAuth();
+  const { logSecurityEvent, sessionValid, checkSession } = useSecurity();
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [manualTransactions, setManualTransactions] = useState<ManualTransaction[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -77,37 +79,58 @@ const ManualDataUpload = () => {
     'Equipment', 'Software', 'Inventory', 'Taxes', 'Interest', 'Other'
   ];
 
-  // File validation helper
+  // Enhanced file validation with security
   const validateFiles = useCallback((files: FileList) => {
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = ['.csv', '.xlsx', '.xls', '.pdf', '.qif'];
     const validFiles: File[] = [];
     const errors: string[] = [];
 
     Array.from(files).forEach(file => {
-      // Check file size
-      if (file.size > maxSize) {
-        errors.push(`${file.name} exceeds 10MB limit`);
-        return;
+      const validation = validateFile(file);
+      
+      if (validation.valid) {
+        validFiles.push(file);
+      } else {
+        errors.push(...validation.errors.map(error => `${file.name}: ${error}`));
+        
+        // Log security event for invalid files
+        logSecurityEvent('invalid_file_upload_attempt', {
+          filename: file.name,
+          file_size: file.size,
+          file_type: file.type,
+          errors: validation.errors
+        });
       }
-
-      // Check file type
-      const fileName = file.name.toLowerCase();
-      const isValidType = allowedTypes.some(type => fileName.endsWith(type));
-      if (!isValidType) {
-        errors.push(`${file.name} is not a supported file type`);
-        return;
-      }
-
-      validFiles.push(file);
     });
 
     return { validFiles, errors };
-  }, []);
+  }, [logSecurityEvent]);
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
+
+    // Check authentication and session validity first
+    if (!user) {
+      await logSecurityEvent('unauthorized_upload_attempt');
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to upload files.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate session
+    const sessionIsValid = await checkSession();
+    if (!sessionIsValid) {
+      await logSecurityEvent('invalid_session_upload_attempt');
+      toast({
+        title: "Session expired",
+        description: "Please sign in again to upload files.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Validate files if they came from file input (not already validated from drop)
     const { validFiles, errors } = validateFiles(files);
@@ -128,20 +151,74 @@ const ManualDataUpload = () => {
     setUploadProgress(0);
 
     try {
-      // Get user's organization
-      const { data: memberships } = await supabase
-        .from('memberships')
-        .select('organization_id')
-        .eq('user_id', user?.id)
-        .limit(1);
+      // Get user's organization with better error handling
+      let organizationId: string;
+      
+      try {
+        const { data: memberships, error: membershipError } = await supabase
+          .from('memberships')
+          .select('organization_id')
+          .eq('user_id', user.id)
+          .limit(1);
 
-      if (!memberships?.[0]) {
-        throw new Error('No organization found');
+        if (membershipError) {
+          console.error('Membership lookup error:', membershipError);
+          
+          // Fallback: Create a default organization if none exists
+          const orgName = `${user.email?.split('@')[0] || 'User'}'s Organization`;
+          
+          // Generate unique slug using the database function
+          const { data: slugData, error: slugError } = await supabase
+            .rpc('generate_org_slug', { org_name: orgName });
+          
+          if (slugError) {
+            console.error('Slug generation error:', slugError);
+            throw new Error('Failed to generate organization slug');
+          }
+          
+          const { data: newOrg, error: orgError } = await supabase
+            .from('organizations')
+            .insert({
+              name: orgName,
+              slug: slugData,
+              created_by: user.id,
+              base_currency: currency.code,
+              settings: {
+                currency: currency.code,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+              }
+            })
+            .select()
+            .single();
+
+          if (orgError) throw new Error('Failed to create organization');
+
+          // Create membership with proper role
+          const { error: membershipInsertError } = await supabase
+            .from('memberships')
+            .insert({
+              user_id: user.id,
+              organization_id: newOrg.id,
+              role: 'org_owner'
+            });
+          
+          if (membershipInsertError) {
+            console.error('Membership creation error:', membershipInsertError);
+            throw new Error('Failed to create organization membership');
+          }
+
+          organizationId = newOrg.id;
+        } else if (!memberships?.[0]) {
+          throw new Error('No organization membership found. Please contact support.');
+        } else {
+          organizationId = memberships[0].organization_id;
+        }
+      } catch (orgError: any) {
+        console.error('Organization setup error:', orgError);
+        throw new Error('Failed to verify organization membership. Please try signing out and back in.');
       }
 
-      const organizationId = memberships[0].organization_id;
-
-      const uploadPromises = Array.from(files).map(async (file, index) => {
+      const uploadPromises = validFiles.map(async (file, index) => {
         try {
           // Determine file type based on extension
           const extension = file.name.toLowerCase().split('.').pop();
@@ -165,12 +242,29 @@ const ManualDataUpload = () => {
             uploadCategory = 'financial_forecast';
           }
 
+          // Upload to Supabase Storage first
+          const fileExt = file.name.split('.').pop();
+          const fileName_timestamp = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
+          const filePath = `${organizationId}/${fileName_timestamp}.${fileExt}`;
+
+          const { data: storageData, error: storageError } = await supabase.storage
+            .from('file-uploads')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (storageError) {
+            console.error('Storage upload error:', storageError);
+            throw new Error(`File storage failed: ${storageError.message}`);
+          }
+
           // Create file upload record
           const { data: fileUpload, error: uploadError } = await supabase
             .from('file_uploads')
             .insert({
               organization_id: organizationId,
-              uploaded_by: user?.id,
+              uploaded_by: user.id,
               original_filename: file.name,
               file_size_bytes: file.size,
               file_type: fileType,
@@ -179,11 +273,15 @@ const ManualDataUpload = () => {
               upload_category: uploadCategory,
               status: 'processing',
               processing_started_at: new Date().toISOString(),
+              storage_path: storageData.path
             })
             .select()
             .single();
 
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error('Database insert error:', uploadError);
+            throw new Error(`Database error: ${uploadError.message}`);
+          }
 
           // Simulate processing with progress updates
           let progress = 0;
@@ -204,7 +302,7 @@ const ManualDataUpload = () => {
           const toDate = new Date().toISOString().split('T')[0];
 
           // Update file upload record with completion
-          await supabase
+          const { error: updateError } = await supabase
             .from('file_uploads')
             .update({
               status: 'completed',
@@ -225,18 +323,26 @@ const ManualDataUpload = () => {
             })
             .eq('id', fileUpload.id);
 
-          // Log security event
-          await supabase.rpc('log_security_event', {
-            event_type: 'file_upload_completed',
-            event_details: {
-              file_upload_id: fileUpload.id,
-              filename: file.name,
-              file_size: file.size,
-              upload_source: 'manual',
-              upload_category: uploadCategory,
-              simulated: true
-            }
-          });
+          if (updateError) {
+            console.error('Update error:', updateError);
+          }
+
+          // Try to log security event, but don't fail if it doesn't work
+          try {
+            await supabase.rpc('log_security_event', {
+              event_type: 'file_upload_completed',
+              event_details: {
+                file_upload_id: fileUpload.id,
+                filename: file.name,
+                file_size: file.size,
+                upload_source: 'manual',
+                upload_category: uploadCategory,
+                simulated: true
+              }
+            });
+          } catch (logError) {
+            console.warn('Security logging failed:', logError);
+          }
 
           const newFile: UploadedFile = {
             id: fileUpload.id,
@@ -260,31 +366,57 @@ const ManualDataUpload = () => {
             description: `${file.name} has been processed and is ready for analysis.`,
           });
 
+          return newFile;
+
         } catch (error: any) {
           console.error('File upload error:', error);
+          
+          // Create a failed upload record for tracking
+          const failedFile: UploadedFile = {
+            id: `failed-${Date.now()}-${Math.random().toString(36).substring(2)}`,
+            name: file.name,
+            type: 'transaction_data',
+            size: file.size,
+            uploadDate: new Date().toISOString(),
+            status: 'error',
+            errors: [error.message]
+          };
+
+          setUploadedFiles(prev => [...prev, failedFile]);
           
           toast({
             title: "Upload failed",
             description: `Failed to upload ${file.name}: ${error.message}`,
             variant: "destructive",
           });
+
+          return null;
         }
       });
 
-      await Promise.all(uploadPromises);
+      const results = await Promise.allSettled(uploadPromises);
+      const successCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
+      const failCount = results.length - successCount;
+
+      if (successCount > 0) {
+        toast({
+          title: `${successCount} file(s) uploaded successfully`,
+          description: failCount > 0 ? `${failCount} file(s) failed to upload.` : "All files processed successfully.",
+        });
+      }
 
     } catch (error: any) {
       console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: error.message || "Failed to upload files.",
+        description: error.message || "Failed to upload files. Please check your connection and try again.",
         variant: "destructive",
       });
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
     }
-  }, [validateFiles, currency.code, toast, user?.id]);
+  }, [validateFiles, currency.code, toast, user]);
 
   // Drag and drop handlers with improved flickering prevention
   const handleDragEnter = useCallback((e: React.DragEvent) => {

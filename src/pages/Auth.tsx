@@ -24,6 +24,8 @@ const Auth = () => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [useMagicLink, setUseMagicLink] = useState(true);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -91,6 +93,40 @@ const Auth = () => {
     }
   };
 
+  const handleMagicLink = async (email: string) => {
+    if (!email) {
+      toast({ variant: "destructive", title: "Email required", description: "Please enter your email address." });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        }
+      });
+
+      if (error) throw error;
+
+      setMagicLinkSent(true);
+      toast({
+        title: "Magic link sent!",
+        description: "Check your email and click the link to sign in securely.",
+      });
+    } catch (error: any) {
+      console.error('Magic link error:', error);
+      toast({
+        variant: "destructive",
+        title: "Magic link failed",
+        description: error.message || "Failed to send magic link. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const onSubmit = async (data: AuthFormData) => {
     // Handle reset password flow
     if (isResetPassword) {
@@ -129,39 +165,76 @@ const Auth = () => {
       return;
     }
 
+    // Handle magic link flow
+    if (useMagicLink && !isSignUp) {
+      await handleMagicLink(data.email);
+      return;
+    }
+
     setLoading(true);
     try {
       if (isSignUp) {
         const redirectUrl = `${window.location.origin}/dashboard`;
-        const { error } = await supabase.auth.signUp({
+        
+        // Enhanced signup with better error handling
+        const { data: signUpResult, error } = await supabase.auth.signUp({
           email: data.email,
-          password: data.password,
+          password: data.password || undefined,
           options: {
             emailRedirectTo: redirectUrl,
             data: {
-              first_name: data.firstName,
-              last_name: data.lastName,
+              first_name: data.firstName || '',
+              last_name: data.lastName || '',
+              full_name: `${data.firstName || ''} ${data.lastName || ''}`.trim()
             }
           }
         });
+
         if (error) throw error;
-        toast({ title: "Account created!", description: "Please check your email to verify your account and complete setup." });
+
+        // Check if user already exists but needs verification
+        if (signUpResult.user && !signUpResult.session) {
+          toast({ 
+            title: "Account created!", 
+            description: "Please check your email to verify your account and complete setup." 
+          });
+        } else if (signUpResult.session) {
+          toast({ 
+            title: "Account created!", 
+            description: "Your account has been created and you're now signed in." 
+          });
+          navigate("/dashboard");
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: data.email, password: data.password });
+        // Standard password login
+        const { error } = await supabase.auth.signInWithPassword({ 
+          email: data.email, 
+          password: data.password 
+        });
+        
         if (error) throw error;
+        
         toast({ title: "Welcome back!", description: "You have been signed in successfully." });
         navigate("/dashboard");
       }
     } catch (error: any) {
       console.error('Auth error:', error);
       let errorMessage = "An error occurred during authentication.";
+      
       if (error.message?.includes("User already registered")) {
-        errorMessage = "This email is already registered. Try signing in instead.";
+        errorMessage = "This email is already registered. Try signing in instead or use the magic link option.";
       } else if (error.message?.includes("Invalid login credentials")) {
-        errorMessage = "Invalid email or password. Please try again.";
+        errorMessage = "Invalid email or password. Please try again or use the magic link option.";
       } else if (error.message?.includes("Email not confirmed")) {
-        errorMessage = "Please check your email and click the confirmation link.";
+        errorMessage = "Please check your email and click the confirmation link to verify your account.";
+      } else if (error.message?.includes("Email rate limit exceeded")) {
+        errorMessage = "Too many email attempts. Please wait a few minutes before trying again.";
+      } else if (error.message?.includes("Invalid email")) {
+        errorMessage = "Please enter a valid email address.";
+      } else if (error.message?.includes("Password should be at least")) {
+        errorMessage = "Password must be at least 6 characters long.";
       }
+      
       toast({ variant: "destructive", title: "Authentication failed", description: errorMessage });
     } finally {
       setLoading(false);
@@ -193,6 +266,8 @@ const Auth = () => {
                 ? "Set a New Password"
                 : isForgotPassword
                 ? "Reset Your Password"
+                : magicLinkSent
+                ? "Check Your Email"
                 : isSignUp
                 ? "Create Your Account"
                 : "Welcome Back"}
@@ -202,35 +277,82 @@ const Auth = () => {
                 ? "Enter and confirm your new password to complete the reset"
                 : isForgotPassword
                 ? "Enter your email address and we'll send you a password reset link"
+                : magicLinkSent
+                ? "We've sent you a secure sign-in link. Check your email and click the link to access your dashboard."
                 : isSignUp
                 ? "Start forecasting with AI in minutes"
+                : useMagicLink
+                ? "Sign in securely with a magic link sent to your email"
                 : "Sign in to continue to your dashboard"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Google Sign In - Hide in forgot password mode */}
-            {!isForgotPassword && !isResetPassword && (
-              <div className="space-y-4 mb-6">
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  className="w-full" 
-                  onClick={handleGoogleSignIn}
-                  disabled={loading}
+            {/* Show success state for magic link */}
+            {magicLinkSent && (
+              <div className="text-center py-8">
+                <Mail className="w-16 h-16 mx-auto text-primary mb-4" />
+                <p className="text-sm text-muted-foreground mb-4">
+                  Magic link sent to your email address
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setMagicLinkSent(false);
+                    setUseMagicLink(false);
+                  }}
                 >
-                  <Chrome className="w-4 h-4 mr-2" />
-                  Continue with Google
+                  Try a different method
                 </Button>
-                
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-                  </div>
-                </div>
               </div>
+            )}
+
+            {!magicLinkSent && (
+              <>
+                {/* Google Sign In - Hide in forgot password mode */}
+                {!isForgotPassword && !isResetPassword && (
+                  <div className="space-y-4 mb-6">
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      className="w-full" 
+                      onClick={handleGoogleSignIn}
+                      disabled={loading}
+                    >
+                      <Chrome className="w-4 h-4 mr-2" />
+                      Continue with Google
+                    </Button>
+                    
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Magic Link Toggle for Sign In */}
+                {!isSignUp && !isForgotPassword && !isResetPassword && (
+                  <div className="flex items-center justify-center space-x-2 mb-4">
+                    <Button
+                      variant={useMagicLink ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setUseMagicLink(true)}
+                    >
+                      Magic Link
+                    </Button>
+                    <Button
+                      variant={!useMagicLink ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setUseMagicLink(false)}
+                    >
+                      Password
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -282,14 +404,14 @@ const Auth = () => {
                 </div>
               )}
               
-              {!isForgotPassword && !isResetPassword && (
+              {!isForgotPassword && !isResetPassword && !useMagicLink && (
                 <div>
                   <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
                     type="password"
                     {...register("password", {
-                      required: !isForgotPassword ? "Password is required" : false,
+                      required: !isForgotPassword && !useMagicLink ? "Password is required" : false,
                       minLength: {
                         value: 6,
                         message: "Password must be at least 6 characters"
@@ -335,10 +457,20 @@ const Auth = () => {
                 </div>
               )}
               
-              <Button type="submit" className="w-full" disabled={loading} variant="hero">
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isResetPassword ? "Update Password" : isForgotPassword ? "Send Reset Email" : isSignUp ? "Create Account" : "Sign In"}
-              </Button>
+              {!magicLinkSent && (
+                <Button type="submit" className="w-full" disabled={loading} variant="hero">
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isResetPassword 
+                    ? "Update Password" 
+                    : isForgotPassword 
+                    ? "Send Reset Email" 
+                    : isSignUp 
+                    ? "Create Account"
+                    : useMagicLink
+                    ? "Send Magic Link"
+                    : "Sign In"}
+                </Button>
+              )}
               
               {!isSignUp && !isForgotPassword && !isResetPassword && (
                 <div className="mt-2 text-center">

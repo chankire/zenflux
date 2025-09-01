@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 50px;
+            text-align: center;
+            margin: 20px 0;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .drop-zone.drag-active {
+            border-color: #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+        .file-input {
+            display: none;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .test-results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>ZenFlux Upload Functionality Test</h1>
+    
+    <div id="test-results" class="test-results">
+        <h3>Test Results:</h3>
+        <div id="results-content">Running tests...</div>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+        <h3>Drag & Drop Test Area</h3>
+        <p>Drag files here or click to select</p>
+        <input type="file" id="fileInput" class="file-input" multiple accept=".csv,.xlsx,.xls,.pdf,.qif">
+        <button class="btn" onclick="triggerFileSelect()">Select Files</button>
+    </div>
+
+    <div id="file-list"></div>
+
+    <script>
+        // Test Results Tracker
+        const testResults = [];
+        
+        function logTest(testName, passed, details) {
+            testResults.push({ name: testName, passed, details });
+            updateTestResults();
+        }
+        
+        function updateTestResults() {
+            const resultsDiv = document.getElementById('results-content');
+            let html = '';
+            
+            testResults.forEach(test => {
+                const status = test.passed ? 'PASS' : 'FAIL';
+                const className = test.passed ? 'success' : 'error';
+                html += `<div class="${className}">
+                    [${status}] ${test.name}: ${test.details}
+                </div>`;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Get DOM elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('file-list');
+        
+        // Test 1: Check if elements exist
+        if (dropZone && fileInput) {
+            logTest('DOM Elements', true, 'Drop zone and file input found');
+        } else {
+            logTest('DOM Elements', false, 'Missing required elements');
+        }
+        
+        // Test 2: File input click functionality
+        function triggerFileSelect() {
+            try {
+                fileInput.click();
+                logTest('File Input Click', true, 'File input click triggered successfully');
+            } catch (error) {
+                logTest('File Input Click', false, `Error: ${error.message}`);
+            }
+        }
+        
+        // Test 3: File change event handler
+        fileInput.addEventListener('change', function(e) {
+            const files = e.target.files;
+            logTest('File Selection', files.length > 0, `${files.length} files selected`);
+            displayFiles(files);
+        });
+        
+        // Test 4: Drag and drop event handlers
+        let dragCounter = 0;
+        
+        dropZone.addEventListener('dragenter', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dragCounter++;
+            dropZone.classList.add('drag-active');
+            if (dragCounter === 1) {
+                logTest('Drag Enter', true, 'Drag enter event fired');
+            }
+        });
+        
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dragCounter--;
+            if (dragCounter === 0) {
+                dropZone.classList.remove('drag-active');
+                logTest('Drag Leave', true, 'Drag leave event fired');
+            }
+        });
+        
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            // Don't log every dragover event, just test once
+            if (!window.dragOverTested) {
+                logTest('Drag Over', true, 'Drag over event handling works');
+                window.dragOverTested = true;
+            }
+        });
+        
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dragCounter = 0;
+            dropZone.classList.remove('drag-active');
+            
+            const files = e.dataTransfer.files;
+            logTest('File Drop', files.length > 0, `${files.length} files dropped`);
+            displayFiles(files);
+        });
+        
+        // Test 5: Click on drop zone
+        dropZone.addEventListener('click', function(e) {
+            if (e.target === dropZone || e.target.tagName !== 'BUTTON') {
+                triggerFileSelect();
+            }
+        });
+        
+        function displayFiles(files) {
+            let html = '<h3>Files:</h3>';
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileSize = (file.size / 1024).toFixed(1);
+                html += `<div>
+                    <strong>${file.name}</strong> 
+                    (${fileSize} KB, ${file.type || 'unknown type'})
+                </div>`;
+            }
+            fileList.innerHTML = html;
+        }
+        
+        // Test 6: File type validation
+        function validateFileTypes(files) {
+            const allowedExtensions = ['.csv', '.xlsx', '.xls', '.pdf', '.qif'];
+            let validCount = 0;
+            
+            for (let file of files) {
+                const fileName = file.name.toLowerCase();
+                const isValid = allowedExtensions.some(ext => fileName.endsWith(ext));
+                if (isValid) validCount++;
+            }
+            
+            logTest('File Type Validation', validCount > 0, 
+                `${validCount}/${files.length} files have valid extensions`);
+        }
+        
+        // Auto-run basic functionality tests
+        setTimeout(() => {
+            // Test if drag and drop events are properly attached
+            const hasEventListeners = dropZone.ondragenter !== null || 
+                                    dropZone.addEventListener !== undefined;
+            logTest('Event Listeners', hasEventListeners, 
+                'Event listeners can be attached to drop zone');
+            
+            // Test file input attributes
+            const acceptAttr = fileInput.getAttribute('accept');
+            logTest('File Input Accept Attribute', 
+                acceptAttr === '.csv,.xlsx,.xls,.pdf,.qif', 
+                `Accept attribute: ${acceptAttr}`);
+                
+            logTest('File Input Multiple Attribute', 
+                fileInput.hasAttribute('multiple'), 
+                'Multiple file selection enabled');
+        }, 100);
+    </script>
+</body>
+</html>

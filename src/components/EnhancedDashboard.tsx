@@ -24,6 +24,7 @@ import DataModeToggle from "./DataModeToggle";
 import CSVUploader from "./CSVUploader";
 import ExecutiveDashboard from "./ExecutiveDashboard";
 import ScenarioPlanning from "./ScenarioPlanning";
+import AdvancedAnalytics from "./AdvancedAnalytics";
 
 interface Organization {
   id: string;
@@ -239,9 +240,10 @@ const EnhancedDashboard = () => {
 
       {/* Main Dashboard Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="forecasting">Forecasting</TabsTrigger>
+          <TabsTrigger value="analytics">Advanced Analytics</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="data">Data Management</TabsTrigger>
         </TabsList>
@@ -328,6 +330,13 @@ const EnhancedDashboard = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-4">
+          <AdvancedAnalytics 
+            organizationId={organizations[0]?.id || ''}
+            period={forecastPeriod}
+          />
         </TabsContent>
 
         <TabsContent value="scenarios" className="space-y-4">
