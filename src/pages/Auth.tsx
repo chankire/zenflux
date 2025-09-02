@@ -220,9 +220,12 @@ const Auth = () => {
     } catch (error: any) {
       console.error('Auth error:', error);
       let errorMessage = "An error occurred during authentication.";
+      let showSignInOption = false;
       
-      if (error.message?.includes("User already registered")) {
-        errorMessage = "This email is already registered. Try signing in instead or use the magic link option.";
+      if (error.message?.includes("User already registered") || 
+          error.message?.includes("email address is already in use")) {
+        errorMessage = "This email is already registered.";
+        showSignInOption = true;
       } else if (error.message?.includes("Invalid login credentials")) {
         errorMessage = "Invalid email or password. Please try again or use the magic link option.";
       } else if (error.message?.includes("Email not confirmed")) {
@@ -233,9 +236,35 @@ const Auth = () => {
         errorMessage = "Please enter a valid email address.";
       } else if (error.message?.includes("Password should be at least")) {
         errorMessage = "Password must be at least 6 characters long.";
+      } else if (error.message?.includes("violates row-level security policy")) {
+        errorMessage = "Account setup is temporarily unavailable. Please try again in a moment or contact support.";
       }
       
-      toast({ variant: "destructive", title: "Authentication failed", description: errorMessage });
+      toast({ 
+        variant: "destructive", 
+        title: showSignInOption ? "Email Already Registered" : "Authentication failed", 
+        description: errorMessage + (showSignInOption ? " Please sign in instead." : ""),
+        action: showSignInOption ? (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              setIsSignUp(false);
+              setUseMagicLink(true);
+            }}
+          >
+            Sign In
+          </Button>
+        ) : undefined
+      });
+      
+      // Auto-switch to sign-in mode if user already exists
+      if (showSignInOption) {
+        setTimeout(() => {
+          setIsSignUp(false);
+          setUseMagicLink(true);
+        }, 2000);
+      }
     } finally {
       setLoading(false);
     }
