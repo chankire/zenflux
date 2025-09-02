@@ -231,7 +231,15 @@ const Auth = () => {
     setLoading(true);
     try {
       if (isSignUp) {
-        // Sign up flow
+        // Sign up flow - enhanced debugging
+        console.log('Attempting signup with:', {
+          email: data.email.trim().toLowerCase(),
+          hasPassword: !!data.password,
+          passwordLength: data.password?.length,
+          firstName: data.firstName?.trim(),
+          lastName: data.lastName?.trim()
+        });
+
         const { data: signUpResult, error } = await supabase.auth.signUp({
           email: data.email.trim().toLowerCase(),
           password: data.password,
@@ -244,6 +252,9 @@ const Auth = () => {
             }
           }
         });
+
+        console.log('Signup result:', signUpResult);
+        console.log('Signup error:', error);
 
         if (error) {
           // Handle specific signup errors
@@ -413,16 +424,23 @@ const Auth = () => {
                       <Input
                         id="newPassword"
                         type="password"
-                        placeholder="Enter new password (min 6 characters)"
+                        placeholder="New password (A-z, 0-9, !@#$)"
                         {...register("newPassword", { 
                           required: "Password is required",
-                          minLength: { value: 6, message: "Password must be at least 6 characters" }
+                          minLength: { value: 8, message: "Password must be at least 8 characters" },
+                          pattern: {
+                            value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"|<>?,./`~])/,
+                            message: "Password must contain uppercase, lowercase, number, and special character"
+                          }
                         })}
                         className={errors.newPassword ? "border-red-500" : ""}
                       />
                       {errors.newPassword && (
                         <p className="text-red-500 text-xs">{errors.newPassword.message}</p>
                       )}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Must contain: uppercase (A-Z), lowercase (a-z), number (0-9), special character (!@#$...)
+                      </p>
                     </div>
                     
                     <div className="space-y-2">
@@ -538,12 +556,21 @@ const Auth = () => {
                         <Input
                           id="password"
                           type="password"
-                          placeholder={isSignUp ? "Create password (min 6 chars)" : "Enter your password"}
+                          placeholder={isSignUp ? "Password (A-z, 0-9, !@#$)" : "Enter your password"}
                           {...register("password", { 
                             required: !useMagicLink,
-                            minLength: isSignUp ? { value: 6, message: "Minimum 6 characters" } : undefined
+                            minLength: isSignUp ? { value: 8, message: "Minimum 8 characters" } : undefined,
+                            pattern: isSignUp ? {
+                              value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"|<>?,./`~])/,
+                              message: "Password must contain uppercase, lowercase, number, and special character"
+                            } : undefined
                           })}
                         />
+                        {isSignUp && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Must contain: uppercase (A-Z), lowercase (a-z), number (0-9), special character (!@#$...)
+                          </p>
+                        )}
                       </div>
                     )}
 

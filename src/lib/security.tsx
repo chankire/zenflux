@@ -119,21 +119,15 @@ export const SecurityProvider = ({ children }: SecurityProviderProps) => {
         }
       };
 
-      // Use RPC function if available, fallback to basic logging
-      try {
-        await supabase.rpc('log_security_event', eventData);
-      } catch (rpcError) {
-        console.warn('Security RPC logging failed, using fallback:', rpcError);
-        
-        // Fallback: Try to insert directly into security_events table
-        try {
-          await supabase
-            .from('security_events')
-            .insert(eventData);
-        } catch (insertError) {
-          console.error('Security event logging failed:', insertError);
-        }
-      }
+      // Temporarily disable security logging to avoid 404 errors
+      console.log('Security Event:', eventType, eventData);
+      
+      // TODO: Re-enable when RPC/table is properly set up
+      // try {
+      //   await supabase.rpc('log_security_event', eventData);
+      // } catch (rpcError) {
+      //   console.warn('Security RPC logging failed:', rpcError);
+      // }
     } catch (error) {
       console.error('Failed to log security event:', error);
     }
