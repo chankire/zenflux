@@ -23,6 +23,7 @@ import ForexAnalysis from "./components/ForexAnalysis";
 import ManualDataUpload from "./components/ManualDataUpload";
 import NavigationSidebar from "./components/NavigationSidebar";
 import NotFound from "./pages/NotFound";
+import Debug from "./pages/Debug";
 
 const queryClient = new QueryClient();
 
@@ -150,6 +151,7 @@ const AppRoutes = () => {
         <Route path="/blog/cfos-leverage-ai-improve-forecast-accuracy" element={<CFOsAI />} />
         <Route path="/blog/multi-bank-visibility-growing-businesses" element={<MultiBankVisibility />} />
         <Route path="/blog/future-financial-forecasting-ai-powered" element={<AIForecasting />} />
+        <Route path="/debug" element={<Debug />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
