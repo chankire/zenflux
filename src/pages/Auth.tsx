@@ -219,11 +219,16 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error('Auth error:', error);
+      console.error('Full error object:', JSON.stringify(error, null, 2));
       let errorMessage = "An error occurred during authentication.";
       let showSignInOption = false;
       
+      // Check various error patterns for existing user
       if (error.message?.includes("User already registered") || 
-          error.message?.includes("email address is already in use")) {
+          error.message?.includes("email address is already in use") ||
+          error.message?.includes("duplicate key value") ||
+          error.message?.includes("already been taken") ||
+          (error.status === 422 && isSignUp)) {
         errorMessage = "This email is already registered.";
         showSignInOption = true;
       } else if (error.message?.includes("Invalid login credentials")) {
