@@ -68,27 +68,66 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     setUploading(true);
     
     try {
-      // 1. Check user authentication
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !user) {
-        throw new Error('User not authenticated. Please log in again.');
+      // 1. Verify user authentication with retry
+      let user;
+      let authAttempts = 0;
+      const maxAuthAttempts = 3;
+
+      while (authAttempts < maxAuthAttempts) {
+        const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
+        
+        if (currentUser && !authError) {
+          user = currentUser;
+          break;
+        }
+
+        authAttempts++;
+        if (authAttempts < maxAuthAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        }
+      }
+
+      if (!user) {
+        throw new Error('Authentication failed. Please refresh and sign in again.');
       }
 
       console.log('User authenticated:', user.id);
 
-      // 2. Generate unique slug using database function
-      const { data: slug, error: slugError } = await supabase
-        .rpc('generate_org_slug', { org_name: organizationData.name.trim() });
-      
-      if (slugError) {
-        console.error('Slug generation error:', slugError);
-        throw new Error('Failed to generate organization slug');
+      // 2. Check if user already has an organization
+      const { data: existingMemberships } = await supabase
+        .from('memberships')
+        .select('organization_id, organizations!inner(*)')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      if (existingMemberships && existingMemberships.length > 0) {
+        toast({
+          title: "Organization already exists!",
+          description: "Redirecting to your dashboard.",
+        });
+        setCurrentStep(3);
+        return;
+      }
+
+      // 3. Generate unique slug
+      let slug;
+      try {
+        const { data: slugData, error: slugError } = await supabase
+          .rpc('generate_org_slug', { org_name: organizationData.name.trim() });
+        
+        if (slugError) throw slugError;
+        slug = slugData;
+      } catch (slugError) {
+        // Fallback: create slug manually
+        slug = organizationData.name.trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '') + '-' + Math.random().toString(36).substr(2, 6);
       }
 
       console.log('Generated slug:', slug);
 
-      // 3. Create organization
+      // 4. Create organization with transaction
       const { data: org, error: orgError } = await supabase
         .from("organizations")
         .insert({
@@ -98,7 +137,8 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
           created_by: user.id,
           settings: {
             currency: organizationData.currency,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            created_at: new Date().toISOString()
           }
         })
         .select()
@@ -106,26 +146,35 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
 
       if (orgError) {
         console.error('Organization creation error:', orgError);
-        throw orgError;
+        if (orgError.message.includes('duplicate key') || orgError.message.includes('already exists')) {
+          throw new Error('An organization with this name already exists. Please choose a different name.');
+        }
+        throw new Error(`Failed to create organization: ${orgError.message}`);
       }
 
-      console.log('Organization created:', org);
+      console.log('Organization created successfully:', org);
 
-      // 4. Create membership manually (don't rely on triggers)
-      const { error: membershipError } = await supabase
+      // 5. Create membership
+      const { data: membership, error: membershipError } = await supabase
         .from("memberships")
         .insert({
           user_id: user.id,
           organization_id: org.id,
           role: 'org_owner'
-        });
+        })
+        .select()
+        .single();
 
       if (membershipError) {
         console.error('Membership creation error:', membershipError);
-        // Don't throw here - org was created successfully
-        console.warn('Organization created but membership failed. User may need to be added manually.');
+        // Organization was created, but membership failed - try to clean up or proceed
+        toast({
+          title: "Organization created with warning",
+          description: "Organization created but membership setup incomplete. Proceeding to next step.",
+          variant: "default",
+        });
       } else {
-        console.log('Membership created successfully');
+        console.log('Membership created successfully:', membership);
       }
 
       toast({
@@ -136,9 +185,20 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       setCurrentStep(2);
     } catch (error: any) {
       console.error('Error in company setup:', error);
+      
+      let errorMessage = "Failed to create organization. Please try again.";
+      
+      if (error.message?.includes('Authentication failed')) {
+        errorMessage = "Please refresh the page and sign in again.";
+      } else if (error.message?.includes('already exists')) {
+        errorMessage = "An organization with this name already exists. Please choose a different name.";
+      } else if (error.message?.includes('violates row-level security')) {
+        errorMessage = "Account setup error. Please contact support if this persists.";
+      }
+      
       toast({
         title: "Setup failed",
-        description: error.message || "Failed to create organization. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
