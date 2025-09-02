@@ -61,10 +61,15 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
+      // Use production URL for OAuth redirect in production, local URL for development
+      const redirectUrl = import.meta.env.VITE_APP_URL 
+        ? `${import.meta.env.VITE_APP_URL}/dashboard`
+        : `${window.location.origin}/dashboard`;
+        
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: redirectUrl
         }
       });
 
@@ -93,8 +98,13 @@ const Auth = () => {
 
     setLoading(true);
     try {
+      // Use production URL for password reset in production, local URL for development
+      const redirectUrl = import.meta.env.VITE_APP_URL 
+        ? `${import.meta.env.VITE_APP_URL}/auth`
+        : `${window.location.origin}/auth`;
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: redirectUrl,
       });
 
       if (error) throw error;
@@ -129,10 +139,15 @@ const Auth = () => {
 
     setLoading(true);
     try {
+      // Use production URL for magic link redirect in production, local URL for development
+      const redirectUrl = import.meta.env.VITE_APP_URL 
+        ? `${import.meta.env.VITE_APP_URL}/dashboard`
+        : `${window.location.origin}/dashboard`;
+        
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: redirectUrl,
         }
       });
 
@@ -240,11 +255,16 @@ const Auth = () => {
           lastName: data.lastName?.trim()
         });
 
+        // Use production URL for email verification redirect in production, local URL for development
+        const redirectUrl = import.meta.env.VITE_APP_URL 
+          ? `${import.meta.env.VITE_APP_URL}/dashboard`
+          : `${window.location.origin}/dashboard`;
+
         const { data: signUpResult, error } = await supabase.auth.signUp({
           email: data.email.trim().toLowerCase(),
           password: data.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: redirectUrl,
             data: {
               first_name: data.firstName?.trim() || '',
               last_name: data.lastName?.trim() || '',
