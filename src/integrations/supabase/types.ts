@@ -285,6 +285,105 @@ export type Database = {
           },
         ]
       }
+      file_uploads: {
+        Row: {
+          content_type: string | null
+          created_at: string
+          error_message: string | null
+          failed_rows: number | null
+          file_content: string | null
+          file_size_bytes: number
+          file_type: string
+          id: string
+          organization_id: string
+          original_filename: string
+          processed_at: string | null
+          processing_completed_at: string | null
+          processing_metadata: Json | null
+          processing_started_at: string | null
+          status: string
+          successful_rows: number | null
+          total_rows_processed: number | null
+          transaction_date_from: string | null
+          transaction_date_to: string | null
+          updated_at: string
+          upload_category: string | null
+          upload_source: string
+          uploaded_at: string
+          uploaded_by: string | null
+          validation_errors: Json | null
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string
+          error_message?: string | null
+          failed_rows?: number | null
+          file_content?: string | null
+          file_size_bytes: number
+          file_type: string
+          id?: string
+          organization_id: string
+          original_filename: string
+          processed_at?: string | null
+          processing_completed_at?: string | null
+          processing_metadata?: Json | null
+          processing_started_at?: string | null
+          status?: string
+          successful_rows?: number | null
+          total_rows_processed?: number | null
+          transaction_date_from?: string | null
+          transaction_date_to?: string | null
+          updated_at?: string
+          upload_category?: string | null
+          upload_source?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+          validation_errors?: Json | null
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string
+          error_message?: string | null
+          failed_rows?: number | null
+          file_content?: string | null
+          file_size_bytes?: number
+          file_type?: string
+          id?: string
+          organization_id?: string
+          original_filename?: string
+          processed_at?: string | null
+          processing_completed_at?: string | null
+          processing_metadata?: Json | null
+          processing_started_at?: string | null
+          status?: string
+          successful_rows?: number | null
+          total_rows_processed?: number | null
+          transaction_date_from?: string | null
+          transaction_date_to?: string | null
+          updated_at?: string
+          upload_category?: string | null
+          upload_source?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+          validation_errors?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_uploads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "file_uploads_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forecast_models: {
         Row: {
           created_at: string
@@ -550,28 +649,42 @@ export type Database = {
         Row: {
           base_currency: string | null
           created_at: string
+          created_by: string | null
           id: string
           name: string
+          settings: Json | null
           slug: string
           updated_at: string
         }
         Insert: {
           base_currency?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
           name: string
+          settings?: Json | null
           slug: string
           updated_at?: string
         }
         Update: {
           base_currency?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
           name?: string
+          settings?: Json | null
           slug?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organizations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -737,6 +850,7 @@ export type Database = {
           created_at: string
           currency: string | null
           external_id: string | null
+          file_upload_id: string | null
           id: string
           is_forecast: boolean | null
           memo: string | null
@@ -752,6 +866,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           external_id?: string | null
+          file_upload_id?: string | null
           id?: string
           is_forecast?: boolean | null
           memo?: string | null
@@ -767,6 +882,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           external_id?: string | null
+          file_upload_id?: string | null
           id?: string
           is_forecast?: boolean | null
           memo?: string | null
@@ -794,6 +910,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_file_upload_id_fkey"
+            columns: ["file_upload_id"]
+            isOneToOne: false
+            referencedRelation: "file_uploads"
             referencedColumns: ["id"]
           },
           {
@@ -837,6 +960,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_org_slug: {
+        Args: { org_name: string }
+        Returns: string
+      }
       get_financial_summary_for_org: {
         Args: { org_id: string }
         Returns: {
@@ -849,9 +976,21 @@ export type Database = {
           transaction_count: number
         }[]
       }
+      get_request_info: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_user_role_in_org: {
         Args: { org_id: string }
         Returns: string
+      }
+      log_file_upload_event: {
+        Args: {
+          additional_details?: Json
+          event_type: string
+          upload_id: string
+        }
+        Returns: undefined
       }
       log_security_event: {
         Args: { event_details?: Json; event_type: string }
