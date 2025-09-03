@@ -146,7 +146,7 @@
 @layer components {
   /* Glass Card Component */
   .glass-card {
-    @apply bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-glass;
+    @apply bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl;
   }
 
   /* Professional Financial Cards */
