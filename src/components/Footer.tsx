@@ -6,7 +6,6 @@ const Footer = () => {
       title: "Product",
       links: [
         { label: "Features", href: "#features" },
-        { label: "Pricing", href: "#pricing" },
         { label: "API", href: "#api" },
         { label: "Integrations", href: "#integrations" },
         { label: "Security", href: "#security" }
@@ -27,9 +26,7 @@ const Footer = () => {
       links: [
         { label: "Why Spreadsheets Fail", href: "/blog/cash-flow-forecasting-broken-spreadsheets" },
         { label: "Managing Runway in 2025", href: "/blog/founders-guide-managing-runway-2025" },
-        { label: "AI for CFOs", href: "/blog/how-cfos-leverage-ai-improve-forecast-accuracy" },
-        { label: "Multi-Bank Visibility", href: "/blog/multi-bank-visibility-growing-businesses" },
-        { label: "Future of Forecasting", href: "/blog/future-financial-forecasting-ai-powered" }
+        { label: "AI for CFOs", href: "/blog/how-cfos-leverage-ai-improve-forecast-accuracy" }
       ]
     },
     {

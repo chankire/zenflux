@@ -18,7 +18,7 @@ const Blog = () => {
       excerpt: "Learn why spreadsheets fail at cash flow forecasting and how AI-powered tools like ZenFlux deliver real-time accuracy and insights.",
       image: spreadsheetsFrustrated,
       imageAlt: "Finance manager looking frustrated at spreadsheets on laptop",
-      date: "2025-01-15",
+      date: "2024-08-15",
       readTime: "8 min read",
       category: "Forecasting"
     },
@@ -28,7 +28,7 @@ const Blog = () => {
       excerpt: "Discover how startups can manage cash runway in 2025 with AI-powered forecasting, scenario planning, and multi-bank integration.",
       image: runwayPlanning,
       imageAlt: "Startup team analyzing financial projections on a digital dashboard",
-      date: "2025-01-12",
+      date: "2024-07-22",
       readTime: "10 min read",
       category: "Startup Finance"
     },
@@ -38,29 +38,9 @@ const Blog = () => {
       excerpt: "Explore how CFOs can use AI-powered forecasting to achieve >95% accuracy, cut manual work, and drive strategic decision-making.",
       image: cfoPresentation,
       imageAlt: "CFO showcasing cash flow insights on large financial dashboard screen",
-      date: "2025-01-10",
+      date: "2024-06-18",
       readTime: "12 min read",
       category: "AI & Finance"
-    },
-    {
-      id: "multi-bank-visibility-growing-businesses",
-      title: "Multi-Bank Visibility: Why It Matters for Growing Businesses",
-      excerpt: "Learn why growing companies need multi-bank visibility and how ZenFlux's API integration makes cash management seamless.",
-      image: multiBank,
-      imageAlt: "Entrepreneur reviewing balances from multiple bank accounts",
-      date: "2025-01-08",
-      readTime: "7 min read",
-      category: "Banking"
-    },
-    {
-      id: "future-financial-forecasting-ai-powered",
-      title: "The Future of Financial Forecasting: AI-Powered Decision Making",
-      excerpt: "See how AI is reshaping financial forecasting, enabling predictive insights and smarter decision-making for founders and CFOs.",
-      image: aiForecasting,
-      imageAlt: "Futuristic visualization of AI analyzing financial data",
-      date: "2025-01-05",
-      readTime: "9 min read",
-      category: "Future of Finance"
     }
   ];
 
