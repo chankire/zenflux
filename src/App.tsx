@@ -4,11 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider as JwtAuthProvider, useAuth } from "@/lib/auth-context";
-import { AuthProvider as SupabaseAuthProvider } from "@/lib/auth";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import { useState, useEffect } from "react";
 import Index from "./pages/Index";
-import AuthPage from "./pages/AuthPage";
+import Auth from "./pages/Auth";
 import EnterpriseDashboard from "./pages/EnterpriseDashboard";
 import Waitlist from "./pages/Waitlist";
 import Documentation from "./pages/Documentation";
@@ -28,7 +27,7 @@ const queryClient = new QueryClient();
 
 const AppRoutes = () => {
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
-  const { user, isLoading } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -55,7 +54,7 @@ const AppRoutes = () => {
   }, [user]);
 
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    if (isLoading || needsOnboarding === null) {
+    if (loading || needsOnboarding === null) {
       return (
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -75,9 +74,9 @@ const AppRoutes = () => {
   };
 
   const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-    const { user, isLoading } = useAuth();
+    const { user, loading } = useAuth();
     
-    if (isLoading) {
+    if (loading) {
       return (
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -102,7 +101,7 @@ const AppRoutes = () => {
         } />
         <Route path="/auth" element={
           <PublicRoute>
-            <AuthPage />
+            <Auth />
           </PublicRoute>
         } />
         <Route path="/dashboard" element={
@@ -129,15 +128,13 @@ const AppRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <SupabaseAuthProvider>
-      <JwtAuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AppRoutes />
-        </TooltipProvider>
-      </JwtAuthProvider>
-    </SupabaseAuthProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AppRoutes />
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
