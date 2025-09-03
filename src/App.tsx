@@ -4,7 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { AuthProvider as JwtAuthProvider, useAuth } from "@/lib/auth-context";
+import { AuthProvider as SupabaseAuthProvider } from "@/lib/auth";
 import { useState, useEffect } from "react";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
@@ -128,13 +129,15 @@ const AppRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AppRoutes />
-      </TooltipProvider>
-    </AuthProvider>
+    <SupabaseAuthProvider>
+      <JwtAuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppRoutes />
+        </TooltipProvider>
+      </JwtAuthProvider>
+    </SupabaseAuthProvider>
   </QueryClientProvider>
 );
 
