@@ -89,7 +89,9 @@ export const FileUploadInterface: React.FC = () => {
     
     // Start uploads
     newUploadFiles.forEach(uploadFile => {
-      uploadFile.status = 'uploading';
+      setUploadFiles(prev => prev.map(f => 
+        f.file === uploadFile.file ? { ...f, status: 'pending' as const } : f
+      ));
       uploadMutation.mutate(uploadFile.file);
     });
   };

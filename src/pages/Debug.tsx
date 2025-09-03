@@ -12,8 +12,8 @@ const Debug = () => {
     const info = {
       supabaseUrl: import.meta.env.VITE_SUPABASE_URL || 'NOT SET',
       supabaseKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? 'SET' : 'NOT SET',
-      clientUrl: supabase.supabaseUrl,
-      clientKey: supabase.supabaseKey ? 'SET' : 'NOT SET',
+      clientUrl: 'PROTECTED_PROPERTY',
+      clientKey: 'PROTECTED_PROPERTY',
       environment: import.meta.env.MODE
     };
     setDebugInfo(info);

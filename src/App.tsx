@@ -4,13 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/lib/auth";
-import { SecurityProvider } from "@/lib/security";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { useState, useEffect } from "react";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import EnhancedDashboard from "./components/EnhancedDashboard";
-import OnboardingFlow from "./components/OnboardingFlow";
+import AuthPage from "./pages/AuthPage";
+import EnterpriseDashboard from "./pages/EnterpriseDashboard";
 import Waitlist from "./pages/Waitlist";
 import Documentation from "./pages/Documentation";
 import Blog from "./pages/Blog";
@@ -20,7 +18,7 @@ import CFOsAI from "./pages/blog/CFOsAI";
 import MultiBankVisibility from "./pages/blog/MultiBankVisibility";
 import AIForecasting from "./pages/blog/AIForecasting";
 import ForexAnalysis from "./components/ForexAnalysis";
-import ManualDataUpload from "./components/ManualDataUpload";
+
 import NavigationSidebar from "./components/NavigationSidebar";
 import NotFound from "./pages/NotFound";
 import Debug from "./pages/Debug";
@@ -29,7 +27,7 @@ const queryClient = new QueryClient();
 
 const AppRoutes = () => {
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -56,7 +54,7 @@ const AppRoutes = () => {
   }, [user]);
 
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    if (loading || needsOnboarding === null) {
+    if (isLoading || needsOnboarding === null) {
       return (
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -69,16 +67,16 @@ const AppRoutes = () => {
     }
 
     if (needsOnboarding) {
-      return <OnboardingFlow onComplete={() => setNeedsOnboarding(false)} />;
+      return <Navigate to="/dashboard" replace />;
     }
     
     return <>{children}</>;
   };
 
   const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-    const { user, loading } = useAuth();
+    const { user, isLoading } = useAuth();
     
-    if (loading) {
+    if (isLoading) {
       return (
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -103,43 +101,12 @@ const AppRoutes = () => {
         } />
         <Route path="/auth" element={
           <PublicRoute>
-            <Auth />
+            <AuthPage />
           </PublicRoute>
         } />
         <Route path="/dashboard" element={
           <ProtectedRoute>
-            <div className="flex h-screen bg-background">
-              <div className="w-64 flex-shrink-0">
-                <NavigationSidebar />
-              </div>
-              <div className="flex-1 overflow-auto p-6">
-                <EnhancedDashboard />
-              </div>
-            </div>
-          </ProtectedRoute>
-        } />
-        <Route path="/forex" element={
-          <ProtectedRoute>
-            <div className="flex h-screen bg-background">
-              <div className="w-64 flex-shrink-0">
-                <NavigationSidebar />
-              </div>
-              <div className="flex-1 overflow-auto p-6">
-                <ForexAnalysis />
-              </div>
-            </div>
-          </ProtectedRoute>
-        } />
-        <Route path="/upload" element={
-          <ProtectedRoute>
-            <div className="flex h-screen bg-background">
-              <div className="w-64 flex-shrink-0">
-                <NavigationSidebar />
-              </div>
-              <div className="flex-1 overflow-auto p-6">
-                <ManualDataUpload />
-              </div>
-            </div>
+            <EnterpriseDashboard />
           </ProtectedRoute>
         } />
         <Route path="/waitlist" element={<Waitlist />} />
@@ -162,13 +129,11 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <SecurityProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AppRoutes />
-        </TooltipProvider>
-      </SecurityProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AppRoutes />
+      </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

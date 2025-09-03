@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CheckCircle, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { validateEmail, sanitizeInput, rateLimit, logSecurityEvent } from "@/lib/security";
+
 
 const Waitlist = () => {
   const [formData, setFormData] = useState({
@@ -22,19 +22,9 @@ const Waitlist = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Client-side rate limiting
-    if (!rateLimit.isAllowed('waitlist-signup', 2, 300000)) { // 2 requests per 5 minutes
-      toast({
-        title: "Too many attempts",
-        description: "Please wait a few minutes before trying again.",
-        variant: "destructive",
-      });
-      logSecurityEvent('rate_limit_exceeded', { form: 'waitlist' });
-      return;
-    }
-    
-    // Validate inputs
-    if (!validateEmail(formData.email)) {
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
       toast({
         title: "Invalid email",
         description: "Please enter a valid email address.",
@@ -53,18 +43,18 @@ const Waitlist = () => {
     }
     
     try {
-      // Sanitize inputs before sending
-      const sanitizedData = {
-        name: sanitizeInput(formData.name, 100),
-        email: sanitizeInput(formData.email, 255).toLowerCase(),
-        company: sanitizeInput(formData.company, 100),
-        role: sanitizeInput(formData.role, 50)
+      // Clean inputs before sending
+      const cleanData = {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        company: formData.company.trim(),
+        role: formData.role
       };
       
       const { supabase } = await import("@/integrations/supabase/client");
       
       const { error } = await supabase.functions.invoke('send-waitlist-request', {
-        body: sanitizedData
+        body: cleanData
       });
 
       if (error) throw error;
@@ -74,11 +64,8 @@ const Waitlist = () => {
         title: "Welcome to the waitlist!",
         description: "We'll reach out soon with early access details.",
       });
-      
-      logSecurityEvent('waitlist_signup_success', { email: sanitizedData.email });
     } catch (error: any) {
       console.error('Error sending waitlist request:', error);
-      logSecurityEvent('waitlist_signup_error', { error: error.message });
       toast({
         variant: "destructive",
         title: "Error joining waitlist",

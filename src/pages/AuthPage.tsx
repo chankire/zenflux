@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { TrendingUp, Brain, BarChart3 } from 'lucide-react';
 
-export const AuthPage: React.FC = () => {
+const AuthPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [registerForm, setRegisterForm] = useState({
@@ -73,7 +73,6 @@ export const AuthPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-accent/5 flex items-center justify-center p-4">
       {/* Background Elements */}
@@ -248,3 +247,5 @@ export const AuthPage: React.FC = () => {
     </div>
   );
 };
+
+export default AuthPage;

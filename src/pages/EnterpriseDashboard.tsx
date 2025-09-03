@@ -20,7 +20,7 @@ import { ForecastingInterface } from '@/components/enterprise/ForecastingInterfa
 import { TransactionTable } from '@/components/enterprise/TransactionTable';
 import { FileUploadInterface } from '@/components/enterprise/FileUploadInterface';
 
-export const EnterpriseDashboard: React.FC = () => {
+const EnterpriseDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   // Fetch dashboard metrics
@@ -228,3 +228,5 @@ export const EnterpriseDashboard: React.FC = () => {
     </div>
   );
 };
+
+export default EnterpriseDashboard;

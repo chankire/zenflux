@@ -21,10 +21,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import DataModeToggle from "./DataModeToggle";
-import CSVUploader from "./CSVUploader";
 import ExecutiveDashboard from "./ExecutiveDashboard";
 import ScenarioPlanning from "./ScenarioPlanning";
-import AdvancedAnalytics from "./AdvancedAnalytics";
+import { FileUploadInterface } from "./enterprise/FileUploadInterface";
 
 interface Organization {
   id: string;
@@ -333,10 +332,17 @@ const EnhancedDashboard = () => {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
-          <AdvancedAnalytics 
-            organizationId={organizations[0]?.id || ''}
-            period={forecastPeriod}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Advanced Analytics</CardTitle>
+                <CardDescription>Coming soon - Advanced analytics dashboard</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Advanced analytics features will be available soon.</p>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="scenarios" className="space-y-4">
@@ -359,7 +365,7 @@ const EnhancedDashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CSVUploader onUploadComplete={loadUserData} />
+                <FileUploadInterface />
               </CardContent>
             </Card>
 
