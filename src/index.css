@@ -16,17 +16,18 @@
     --popover: 0 0% 100%;
     --popover-foreground: 210 20% 15%;
 
-    /* Deep Teal Primary - Professional Financial Software */
-    --primary: 168 76% 24%;  /* #0f766e */
+    /* Enterprise Deep Blue Primary - Trust & Stability */
+    --primary: 217 91% 32%;  /* #1e40af */
     --primary-foreground: 0 0% 98%;
-    --primary-light: 168 84% 35%;
-    --primary-dark: 168 85% 15%;
+    --primary-light: 217 91% 42%;
+    --primary-dark: 217 91% 22%;
+    --primary-glow: 217 91% 70%;
 
-    /* Deep Blue Accent - Enterprise Trust */
-    --accent: 217 91% 32%;  /* #1e40af */
+    /* Professional Blue Accent - Confident & Modern */
+    --accent: 217 91% 60%;  /* #3b82f6 */
     --accent-foreground: 0 0% 98%;
-    --accent-light: 217 91% 42%;
-    --accent-dark: 217 91% 22%;
+    --accent-light: 217 91% 70%;
+    --accent-dark: 217 91% 50%;
 
     /* Professional Grays */
     --secondary: 210 11% 96%;
@@ -40,30 +41,30 @@
 
     --border: 210 12% 90%;
     --input: 210 12% 90%;
-    --ring: 168 76% 24%;
+    --ring: 217 91% 32%;
 
-    /* Success/Positive */
-    --success: 142 71% 45%;
+    /* Financial Green - Success & Growth */
+    --success: 158 64% 52%;  /* #059669 */
     --success-foreground: 0 0% 98%;
 
-    /* Warning */
-    --warning: 38 92% 50%;
+    /* Professional Amber - Warnings & Attention */
+    --warning: 32 95% 44%;  /* #d97706 */
     --warning-foreground: 0 0% 98%;
 
-    /* Enterprise Gradients with Glassmorphism */
-    --gradient-primary: linear-gradient(135deg, hsl(168 76% 24%), hsl(168 84% 35%));
-    --gradient-accent: linear-gradient(135deg, hsl(217 91% 32%), hsl(217 91% 42%));
-    --gradient-hero: linear-gradient(135deg, hsl(168 76% 24%) 0%, hsl(217 91% 32%) 50%, hsl(168 84% 35%) 100%);
+    /* Enterprise Blue Gradients with Glassmorphism */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 32%), hsl(217 91% 42%));
+    --gradient-accent: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 91% 32%) 0%, hsl(217 91% 60%) 50%, hsl(217 91% 42%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.9), hsl(210 11% 97% / 0.8));
     --gradient-glass: linear-gradient(145deg, hsl(0 0% 100% / 0.25), hsl(210 11% 97% / 0.15));
     
-    /* Professional Shadows */
-    --shadow-sm: 0 1px 3px 0 hsl(210 20% 15% / 0.1), 0 1px 2px -1px hsl(210 20% 15% / 0.1);
-    --shadow-md: 0 4px 6px -1px hsl(210 20% 15% / 0.1), 0 2px 4px -2px hsl(210 20% 15% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(210 20% 15% / 0.1), 0 4px 6px -4px hsl(210 20% 15% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(210 20% 15% / 0.1), 0 8px 10px -6px hsl(210 20% 15% / 0.1);
-    --shadow-glow: 0 0 40px hsl(168 76% 24% / 0.2);
-    --shadow-glass: 0 8px 32px 0 hsl(210 20% 15% / 0.1);
+    /* Professional Blue-tinted Shadows */
+    --shadow-sm: 0 1px 3px 0 hsl(217 91% 32% / 0.08), 0 1px 2px -1px hsl(217 91% 32% / 0.06);
+    --shadow-md: 0 4px 6px -1px hsl(217 91% 32% / 0.08), 0 2px 4px -2px hsl(217 91% 32% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(217 91% 32% / 0.08), 0 4px 6px -4px hsl(217 91% 32% / 0.06);
+    --shadow-xl: 0 20px 25px -5px hsl(217 91% 32% / 0.08), 0 8px 10px -6px hsl(217 91% 32% / 0.06);
+    --shadow-glow: 0 0 40px hsl(217 91% 32% / 0.15);
+    --shadow-glass: 0 8px 32px 0 hsl(217 91% 32% / 0.08);
     
     /* Professional Animations */
     --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -126,10 +127,10 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
     /* Dark mode enterprise colors */
-    --primary: 168 84% 35%;
-    --accent: 217 91% 42%;
-    --success: 142 71% 55%;
-    --warning: 38 92% 60%;
+    --primary: 217 91% 60%;  /* Lighter blue for dark mode */
+    --accent: 217 91% 70%;   /* Even lighter blue for accent */
+    --success: 158 64% 62%;  /* Slightly lighter green */
+    --warning: 32 95% 54%;   /* Slightly lighter amber */
   }
 }
 
