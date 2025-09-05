@@ -16,11 +16,12 @@ export interface ForecastModel {
 export interface ForecastConfig {
   organizationId: string;
   accountIds?: string[];
-  horizon: number; // days
+  horizon: number; // days - maximum 365 (12 months)
   confidence: number; // 0.90, 0.95, 0.99
   scenario: 'conservative' | 'moderate' | 'aggressive';
   economicFactors?: EconomicScenario;
   modelType?: 'auto' | 'lstm' | 'arima' | 'ensemble' | 'linear' | 'exponential';
+  rollingWindow?: number; // days for rolling forecast (default 365)
 }
 
 export interface EconomicScenario {
@@ -68,8 +69,11 @@ export interface ModelPerformance {
   recall: number;
   meanAbsoluteError: number;
   rootMeanSquareError: number;
+  meanAbsolutePercentageError: number; // MAPE - primary metric
+  variance: number;
   confidenceScore: number;
   backtestResults: BacktestResult[];
+  modelRanking: number; // 1 = best, higher = worse
 }
 
 export interface BacktestResult {
@@ -181,19 +185,36 @@ class ForecastingEngine {
     });
   }
 
-  private preprocessTransactionData(transactions: MockTransaction[]): number[] {
+  private preprocessTransactionData(transactions: MockTransaction[], rollingWindow: number = 365): number[] {
+    // Filter to rolling window period
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - rollingWindow);
+    
+    const filteredTransactions = transactions.filter(t => 
+      new Date(t.date) >= cutoffDate
+    );
+    
     // Group transactions by day and calculate daily net flow
     const dailyFlows = new Map<string, number>();
     
-    transactions.forEach(transaction => {
+    filteredTransactions.forEach(transaction => {
       const date = transaction.date;
       const currentFlow = dailyFlows.get(date) || 0;
       dailyFlows.set(date, currentFlow + transaction.amount);
     });
 
-    // Sort by date and return values
-    const sortedDates = Array.from(dailyFlows.keys()).sort();
-    return sortedDates.map(date => dailyFlows.get(date) || 0);
+    // Fill gaps with zeros for missing days in rolling window
+    const result: number[] = [];
+    const startDate = new Date(cutoffDate);
+    
+    for (let i = 0; i < rollingWindow; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      const dateStr = currentDate.toISOString().split('T')[0];
+      result.push(dailyFlows.get(dateStr) || 0);
+    }
+    
+    return result;
   }
 
   private async runLSTMForecast(
@@ -430,18 +451,26 @@ class ForecastingEngine {
   }
 
   public async generateForecast(config: ForecastConfig, historicalData: MockTransaction[]): Promise<ForecastResult> {
-    const data = this.preprocessTransactionData(historicalData);
+    // Enforce 12-month rolling forecast limit
+    const maxHorizon = 365; // 12 months
+    const adjustedConfig = {
+      ...config,
+      horizon: Math.min(config.horizon, maxHorizon),
+      rollingWindow: config.rollingWindow || maxHorizon
+    };
     
-    // Select best model or use specified model
+    const data = this.preprocessTransactionData(historicalData, adjustedConfig.rollingWindow);
+    
+    // Select best model based on MAPE and variance analysis
     let selectedModel: ForecastModel;
     
-    if (config.modelType && config.modelType !== 'auto') {
+    if (adjustedConfig.modelType && adjustedConfig.modelType !== 'auto') {
       const models = Array.from(this.models.values()).filter(m => 
-        m.type === config.modelType && m.organization_id === config.organizationId
+        m.type === adjustedConfig.modelType && m.organization_id === adjustedConfig.organizationId
       );
       selectedModel = models[0];
     } else {
-      selectedModel = this.selectBestModel(config.organizationId);
+      selectedModel = await this.selectBestModelByMAPE(adjustedConfig.organizationId, data);
     }
     
     if (!selectedModel) {
@@ -508,6 +537,44 @@ class ForecastingEngine {
     
     return organizationModels[0];
   }
+  
+  public async selectBestModelByMAPE(organizationId: string, data: number[]): Promise<ForecastModel> {
+    const organizationModels = Array.from(this.models.values())
+      .filter(model => model.organization_id === organizationId && model.status === 'active');
+    
+    if (organizationModels.length === 0) {
+      throw new Error('No active models found for organization');
+    }
+    
+    // Evaluate all models using MAPE and variance
+    const modelPerformances: Array<{ model: ForecastModel; performance: ModelPerformance }> = [];
+    
+    for (const model of organizationModels) {
+      const performance = await this.evaluateModelWithMAPE(model, data);
+      modelPerformances.push({ model, performance });
+    }
+    
+    // Sort by MAPE (lower is better), then by variance (lower is better)
+    modelPerformances.sort((a, b) => {
+      const mapeComparison = a.performance.meanAbsolutePercentageError - b.performance.meanAbsolutePercentageError;
+      if (Math.abs(mapeComparison) < 0.01) { // If MAPE is very close, compare variance
+        return a.performance.variance - b.performance.variance;
+      }
+      return mapeComparison;
+    });
+    
+    // Update model rankings
+    modelPerformances.forEach((item, index) => {
+      item.performance.modelRanking = index + 1;
+      // Update the stored model with new performance metrics
+      this.models.set(item.model.id, {
+        ...item.model,
+        accuracy: 1 - (item.performance.meanAbsolutePercentageError / 100) // Convert MAPE to accuracy
+      });
+    });
+    
+    return modelPerformances[0].model;
+  }
 
   public async evaluateModels(historicalData: MockTransaction[]): Promise<ModelPerformance[]> {
     const performances: ModelPerformance[] = [];
@@ -521,24 +588,46 @@ class ForecastingEngine {
   }
 
   private async evaluateModel(model: ForecastModel, data: number[]): Promise<ModelPerformance> {
+    return this.evaluateModelWithMAPE(model, data);
+  }
+  
+  private async evaluateModelWithMAPE(model: ForecastModel, data: number[]): Promise<ModelPerformance> {
     // Generate backtest results
     const backtestResults = await this.generateBacktestResults(model, data);
     
-    // Calculate metrics from backtest
+    // Calculate comprehensive metrics
     const errors = backtestResults.map(result => Math.abs(result.error));
     const meanAbsoluteError = errors.reduce((sum, error) => sum + error, 0) / errors.length;
     const rootMeanSquareError = Math.sqrt(
       errors.reduce((sum, error) => sum + error * error, 0) / errors.length
     );
     
+    // Calculate MAPE (Mean Absolute Percentage Error) - primary metric
+    const mapeValues = backtestResults
+      .filter(result => result.actual !== 0) // Avoid division by zero
+      .map(result => Math.abs((result.actual - result.predicted) / result.actual) * 100);
+    const meanAbsolutePercentageError = mapeValues.length > 0 
+      ? mapeValues.reduce((sum, mape) => sum + mape, 0) / mapeValues.length 
+      : 100; // High MAPE for cases with zero actual values
+    
+    // Calculate variance of errors
+    const meanError = errors.reduce((sum, error) => sum + error, 0) / errors.length;
+    const variance = errors.reduce((sum, error) => sum + Math.pow(error - meanError, 2), 0) / errors.length;
+    
+    // Calculate accuracy from MAPE (lower MAPE = higher accuracy)
+    const accuracy = Math.max(0, Math.min(1, 1 - (meanAbsolutePercentageError / 100)));
+    
     const performance: ModelPerformance = {
-      accuracy: model.accuracy,
-      precision: 0.85, // Mock precision
-      recall: 0.82, // Mock recall
+      accuracy,
+      precision: accuracy * 0.95, // Derived from accuracy
+      recall: accuracy * 0.92, // Derived from accuracy
       meanAbsoluteError,
       rootMeanSquareError,
-      confidenceScore: model.accuracy * 0.9,
-      backtestResults
+      meanAbsolutePercentageError, // Primary metric for model selection
+      variance,
+      confidenceScore: accuracy * (1 - variance / (meanAbsoluteError + 1)), // Confidence decreases with variance
+      backtestResults,
+      modelRanking: 1 // Will be updated during comparison
     };
     
     return performance;
@@ -546,7 +635,7 @@ class ForecastingEngine {
 
   private async generateBacktestResults(model: ForecastModel, data: number[]): Promise<BacktestResult[]> {
     const results: BacktestResult[] = [];
-    const testPeriods = 10; // Test last 10 periods
+    const testPeriods = Math.min(30, Math.floor(data.length * 0.2)); // Test last 30 periods or 20% of data
     
     for (let i = testPeriods; i > 0; i--) {
       const trainData = data.slice(0, -i);

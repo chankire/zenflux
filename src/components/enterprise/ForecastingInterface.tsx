@@ -70,10 +70,11 @@ const ForecastingInterface: React.FC = () => {
   // Forecast configuration
   const [config, setConfig] = useState<ForecastConfig>({
     organizationId: selectedOrganization,
-    horizon: 30,
+    horizon: 90, // Default 3 months
     confidence: 0.95,
     scenario: 'moderate',
-    modelType: 'auto'
+    modelType: 'auto',
+    rollingWindow: 365 // 12-month rolling window
   });
 
   useEffect(() => {
@@ -185,22 +186,25 @@ const ForecastingInterface: React.FC = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Forecast Horizon</Label>
+                  <Label>Forecast Horizon (12-Month Rolling)</Label>
                   <div className="px-3">
                     <Slider
                       value={[config.horizon]}
                       onValueChange={(value) => setConfig(prev => ({ ...prev, horizon: value[0] }))}
-                      max={90}
-                      min={7}
-                      step={1}
+                      max={365} // 12 months maximum
+                      min={30}  // 1 month minimum
+                      step={30} // Monthly increments
                       className="w-full"
                     />
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>7 days</span>
-                    <span className="font-medium">{config.horizon} days</span>
-                    <span>90 days</span>
+                    <span>1 month</span>
+                    <span className="font-medium">{Math.round(config.horizon / 30)} months ({config.horizon} days)</span>
+                    <span>12 months</span>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Rolling forecast using last 12 months of data for optimal accuracy
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -439,7 +443,7 @@ const ForecastingInterface: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-2 mb-2">
@@ -450,7 +454,7 @@ const ForecastingInterface: React.FC = () => {
                       {Math.round(forecast.accuracy_metrics.accuracy * 100)}%
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Mean Absolute Error: {forecast.accuracy_metrics.meanAbsoluteError.toFixed(2)}
+                      MAPE: {forecast.accuracy_metrics.meanAbsolutePercentageError.toFixed(2)}%
                     </p>
                   </CardContent>
                 </Card>
@@ -481,6 +485,21 @@ const ForecastingInterface: React.FC = () => {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Average across forecast period
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <BarChart3 className="h-4 w-4 text-orange-600" />
+                      <span className="font-medium text-sm">Variance</span>
+                    </div>
+                    <p className="text-2xl font-bold">
+                      {forecast.accuracy_metrics.variance.toFixed(0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Model prediction stability
                     </p>
                   </CardContent>
                 </Card>
@@ -604,7 +623,7 @@ const ForecastingInterface: React.FC = () => {
                         <th className="text-left p-2">Predicted</th>
                         <th className="text-left p-2">Actual</th>
                         <th className="text-left p-2">Error</th>
-                        <th className="text-left p-2">Error %</th>
+                        <th className="text-left p-2">MAPE %</th>
                       </tr>
                     </thead>
                     <tbody>
