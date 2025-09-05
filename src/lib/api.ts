@@ -1,5 +1,7 @@
 import { EnhancedForecastingEngine } from "./enhanced-forecasting-engine";
 import { MockTransaction } from "./mock-data";
+import { dataStore } from "./data-store";
+import { FileProcessor } from "./file-processor";
 // Removed JWT backend integration for security - now using Supabase Auth only
 
 // Legacy types kept for compatibility - migrate to Supabase types
@@ -52,7 +54,6 @@ export interface DashboardMetrics {
 export const analyticsAPI = {
   async getDashboardMetrics(): Promise<DashboardMetrics> {
     // Get real metrics from uploaded data
-    const { dataStore } = await import("./data-store");
     const realMetrics = dataStore.calculateMetrics();
     
     // Return real data if available, otherwise return sample data
@@ -84,7 +85,6 @@ export const analyticsAPI = {
 export const transactionsAPI = {
   async getTransactions(): Promise<Transaction[]> {
     // Get real transactions from uploaded data
-    const { dataStore } = await import("./data-store");
     const transactions = dataStore.getTransactions();
     
     if (transactions.length > 0) {
@@ -99,9 +99,6 @@ export const transactionsAPI = {
   
   async uploadFile(file: File): Promise<any> {
     // Process file with real CSV/Excel parser
-    const { FileProcessor } = await import("./file-processor");
-    const { dataStore } = await import("./data-store");
-    
     console.log(`Starting to process file: ${file.name}`);
     dataStore.setLoading(true);
     

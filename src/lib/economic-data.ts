@@ -56,7 +56,7 @@ class EconomicDataManager {
       endpoint: 'https://www.alphavantage.co/query',
       dataType: 'forex',
       updateFrequency: 'real-time',
-      apiKey: process.env.VITE_ALPHA_VANTAGE_API_KEY || 'demo'
+      apiKey: import.meta.env.VITE_ALPHA_VANTAGE_API_KEY || 'demo'
     },
     {
       provider: 'world_bank',
@@ -69,7 +69,7 @@ class EconomicDataManager {
       endpoint: 'https://api.stlouisfed.org/fred/series/observations',
       dataType: 'interest_rates',
       updateFrequency: 'daily',
-      apiKey: process.env.VITE_FRED_API_KEY || 'demo'
+      apiKey: import.meta.env.VITE_FRED_API_KEY || 'demo'
     },
     {
       provider: 'yahoo_finance',

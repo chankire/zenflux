@@ -68,7 +68,7 @@ class AIRouter {
   };
 
   private openaiConfig: OpenAIConfig = {
-    apiKey: process.env.VITE_OPENAI_API_KEY || 'mock-openai-key',
+    apiKey: import.meta.env.VITE_OPENAI_API_KEY || 'mock-openai-key',
     models: {
       categorization: 'gpt-4o-mini',
       forecasting: 'gpt-4o',
@@ -82,7 +82,7 @@ class AIRouter {
   };
 
   private claudeConfig: ClaudeConfig = {
-    apiKey: process.env.VITE_CLAUDE_API_KEY || 'mock-claude-key',
+    apiKey: import.meta.env.VITE_CLAUDE_API_KEY || 'mock-claude-key',
     models: {
       categorization: 'claude-3-5-sonnet-20241022',
       reasoning: 'claude-3-opus-20240229',

@@ -1,4 +1,5 @@
 import { ProcessedTransaction, FileProcessResult } from './file-processor';
+import { useState, useEffect } from 'react';
 
 export interface DataStore {
   transactions: ProcessedTransaction[];
@@ -142,7 +143,6 @@ class TransactionDataStore {
 export const dataStore = new TransactionDataStore();
 
 // React hook for using the data store
-import { useState, useEffect } from 'react';
 
 export function useTransactionData() {
   const [data, setData] = useState<DataStore>(dataStore.getData());
