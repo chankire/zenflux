@@ -1,3 +1,11 @@
+# ZenFlux - AI-Powered Financial Forecasting Platform
+
+**Auto-deployment to Hostinger configured** ✅
+
+---
+
+*Original Lovable README below:*
+
 # Welcome to your Lovable project
 
 ## Project info
