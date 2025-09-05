@@ -51,6 +51,24 @@ export interface DashboardMetrics {
 
 export const analyticsAPI = {
   async getDashboardMetrics(): Promise<DashboardMetrics> {
+    // Get real metrics from uploaded data
+    const { dataStore } = await import("./data-store");
+    const realMetrics = dataStore.calculateMetrics();
+    
+    // Return real data if available, otherwise return sample data
+    if (realMetrics.transactionCount > 0) {
+      console.log("Returning real metrics from uploaded data:", realMetrics);
+      return {
+        totalBalance: realMetrics.totalBalance,
+        monthlyIncome: realMetrics.monthlyIncome,
+        monthlyExpenses: realMetrics.monthlyExpenses,
+        burnRate: realMetrics.burnRate,
+        runwayMonths: realMetrics.runwayMonths,
+        growthRate: realMetrics.growthRate
+      };
+    }
+    
+    console.log("No uploaded data, returning sample metrics");
     // Mock data for now - replace with actual Supabase queries
     return {
       totalBalance: 125000,
@@ -65,15 +83,60 @@ export const analyticsAPI = {
 
 export const transactionsAPI = {
   async getTransactions(): Promise<Transaction[]> {
+    // Get real transactions from uploaded data
+    const { dataStore } = await import("./data-store");
+    const transactions = dataStore.getTransactions();
+    
+    if (transactions.length > 0) {
+      console.log(`Returning ${transactions.length} real transactions`);
+      return transactions;
+    }
+    
+    console.log("No uploaded data, returning empty array");
     // Mock data for now - replace with actual Supabase queries
     return [];
   },
   
   async uploadFile(file: File): Promise<any> {
-    // Mock upload function - replace with actual file processing
-    return new Promise((resolve) => {
-      setTimeout(() => resolve({ success: true, fileName: file.name }), 2000);
-    });
+    // Process file with real CSV/Excel parser
+    const { FileProcessor } = await import("./file-processor");
+    const { dataStore } = await import("./data-store");
+    
+    console.log(`Starting to process file: ${file.name}`);
+    dataStore.setLoading(true);
+    
+    try {
+      const result = await FileProcessor.processFile(file);
+      
+      if (result.success) {
+        dataStore.addFileData(result);
+        console.log(`Successfully processed ${result.transactions.length} transactions`);
+        
+        return {
+          success: true,
+          fileName: file.name,
+          transactionCount: result.transactions.length,
+          summary: result.summary
+        };
+      } else {
+        console.error("File processing failed:", result.error);
+        return {
+          success: false,
+          error: result.error,
+          fileName: file.name
+        };
+      }
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      return {
+        success: false,
+        error: error.message,
+        fileName: file.name
+      };
+    } finally {
+      dataStore.setLoading(false);
+    }
+
   }
 };
 
@@ -103,3 +166,5 @@ export const forecastAPI = {
     });
   }
 };
+
+export default { analyticsAPI, transactionsAPI, forecastAPI };

@@ -14,6 +14,7 @@ import { forecastingEngine, ForecastConfig, ForecastResult, ForecastModel } from
 import { useAuth } from '@/lib/auth';
 import { generateMockTransactions, generateMockBankAccounts } from '@/lib/mock-data';
 import { economicDataManager, EconomicScenario } from '@/lib/economic-data';
+import { useTransactionData } from '@/lib/data-store';
 import { LineChart as RechartsLine, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
 const forecastModels = [
@@ -61,6 +62,7 @@ const forecastModels = [
 
 const ForecastingInterface: React.FC = () => {
   const { user, organizations } = useAuth();
+  const transactionData = useTransactionData();
   const [selectedOrganization] = useState(organizations[0]?.id || 'org-1');
   const [isLoading, setIsLoading] = useState(false);
   const [forecast, setForecast] = useState<ForecastResult | null>(null);
@@ -111,9 +113,17 @@ const ForecastingInterface: React.FC = () => {
   const runForecast = async () => {
     setIsLoading(true);
     try {
-      // Generate mock historical data
-      const accounts = generateMockBankAccounts(selectedOrganization);
-      const transactions = generateMockTransactions(selectedOrganization, accounts, 12);
+      // Use real uploaded transaction data or fallback to mock data
+      let transactions = transactionData.transactions;
+      
+      if (transactions.length === 0) {
+        console.log('No uploaded data found, using mock data for forecasting');
+        // Generate mock historical data as fallback
+        const accounts = generateMockBankAccounts(selectedOrganization);
+        transactions = generateMockTransactions(selectedOrganization, accounts, 12);
+      } else {
+        console.log(`Using ${transactions.length} real uploaded transactions for forecasting`);
+      }
       
       // Update config with economic factors if available
       const forecastConfig: ForecastConfig = {
@@ -160,6 +170,15 @@ const ForecastingInterface: React.FC = () => {
           <CardTitle className="flex items-center space-x-2">
             <Brain className="h-5 w-5" />
             <span>Advanced Financial Forecasting</span>
+            {transactionData.transactions.length > 0 ? (
+              <Badge variant="outline" className="ml-auto bg-green-50 text-green-700 border-green-200">
+                Using {transactionData.transactions.length} real transactions
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="ml-auto bg-orange-50 text-orange-700 border-orange-200">
+                Using sample data
+              </Badge>
+            )}
           </CardTitle>
           <CardDescription>
             AI-powered multi-model forecasting with economic scenario analysis
@@ -176,6 +195,14 @@ const ForecastingInterface: React.FC = () => {
         </TabsList>
 
         <TabsContent value="configure" className="space-y-4">
+          {transactionData.transactions.length === 0 && (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                No transaction data uploaded yet. Upload CSV or Excel files in the "Data Upload" tab to use real data for forecasting, or continue with sample data for testing.
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>

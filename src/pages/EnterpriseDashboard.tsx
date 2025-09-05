@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Home, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from 'react';
+import { useTransactionData } from "@/lib/data-store";
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsAPI, transactionsAPI } from '@/lib/api';
@@ -26,19 +27,21 @@ import { TransactionTable } from '@/components/enterprise/TransactionTable';
 import { FileUploadInterface } from '@/components/enterprise/FileUploadInterface';
 
 const EnterpriseDashboard: React.FC = () => {
+  // Use real uploaded transaction data
+  const transactionData = useTransactionData();
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Fetch dashboard metrics
   const { data: metrics, isLoading: metricsLoading } = useQuery({
-    queryKey: ['dashboard-metrics'],
+    queryKey: ["dashboard-metrics", transactionData.lastUpdated],
     queryFn: analyticsAPI.getDashboardMetrics,
   });
 
   // Fetch transactions
   const { data: transactions, isLoading: transactionsLoading } = useQuery({
-    queryKey: ['transactions'],
+    queryKey: ["transactions", transactionData.lastUpdated],
     queryFn: transactionsAPI.getTransactions,
   });
 
@@ -180,7 +183,7 @@ const EnterpriseDashboard: React.FC = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <CashFlowChart transactions={transactions || []} />
+                    <CashFlowChart transactions={transactionData.transactions} />
                   </CardContent>
                 </Card>
 
@@ -192,7 +195,7 @@ const EnterpriseDashboard: React.FC = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ExpenseBreakdownChart transactions={transactions || []} />
+                    <ExpenseBreakdownChart transactions={transactionData.transactions} />
                   </CardContent>
                 </Card>
               </div>
@@ -203,7 +206,7 @@ const EnterpriseDashboard: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="transactions">
-              <TransactionTable transactions={transactions || []} isLoading={transactionsLoading} />
+              <TransactionTable transactions={transactionData.transactions} isLoading={transactionsLoading} />
             </TabsContent>
 
             <TabsContent value="upload">
