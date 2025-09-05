@@ -170,6 +170,62 @@ const Auth = () => {
     }
   };
 
+  const handleTestUserLogin = async () => {
+    setLoading(true);
+    try {
+      // Use backend test login endpoint
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://zenflux-backend.vercel.app';
+      
+      const response = await fetch(`${backendUrl}/api/auth/test-login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'test@zenflux.ai',
+          password: 'testpassword123'
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error?.message || 'Test login failed');
+      }
+
+      // Set the session in Supabase client
+      if (data.data.session) {
+        await supabase.auth.setSession(data.data.session);
+      }
+
+      toast({
+        title: "Test User Logged In!",
+        description: "You're now signed in as the test user with sample data.",
+      });
+
+      // Seed test data if needed
+      try {
+        await fetch(`${backendUrl}/api/seed-test-data`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (seedError) {
+        console.log('Test data seeding skipped (may already exist)');
+      }
+
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error('Test user login error:', error);
+      toast({
+        variant: "destructive",
+        title: "Test Login Failed",
+        description: error.message || "Could not log in test user.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const onSubmit = async (data: AuthFormData) => {
     // Handle password reset flow
     if (isResetPassword) {
@@ -629,6 +685,17 @@ const Auth = () => {
                     >
                       <Chrome className="w-4 h-4 mr-2" />
                       Continue with Google
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-dashed border-blue-200 hover:border-blue-300"
+                      onClick={handleTestUserLogin}
+                      disabled={loading}
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Quick Test Login (Demo)
                     </Button>
 
                     {!isSignUp && (
