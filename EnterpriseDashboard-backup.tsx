@@ -1,8 +1,3 @@
-import CashFlowChart from "@/components/charts/CashFlowChart";
-import ExpenseBreakdownChart from "@/components/charts/ExpenseBreakdownChart";
-import { useAuth } from "@/lib/auth";
-import { Home, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -26,8 +21,6 @@ import { TransactionTable } from '@/components/enterprise/TransactionTable';
 import { FileUploadInterface } from '@/components/enterprise/FileUploadInterface';
 
 const EnterpriseDashboard: React.FC = () => {
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Fetch dashboard metrics
@@ -73,23 +66,6 @@ const EnterpriseDashboard: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <button
-                onClick={() => navigate("/")}
-                className="flex items-center space-x-2 px-3 py-2 text-sm bg-white/50 hover:bg-white/70 rounded-lg transition-colors"
-              >
-                <Home className="w-4 h-4" />
-                <span>Home</span>
-              </button>
-              <button
-                onClick={() => {
-                  signOut();
-                  navigate("/");
-                }}
-                className="flex items-center space-x-2 px-3 py-2 text-sm bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Sign Out</span>
-              </button>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Last updated</p>
                 <p className="text-sm font-medium">{new Date().toLocaleTimeString()}</p>
@@ -180,11 +156,9 @@ const EnterpriseDashboard: React.FC = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <CashFlowChart transactions={transactions || []} />
-                    {/* <div className="h-64 flex items-center justify-center text-muted-foreground">
+                    <div className="h-64 flex items-center justify-center text-muted-foreground">
                       Chart will be rendered here with Recharts
                     </div>
-                    */
                   </CardContent>
                 </Card>
 
@@ -196,11 +170,9 @@ const EnterpriseDashboard: React.FC = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ExpenseBreakdownChart transactions={transactions || []} />
-                    {/* <div className="h-64 flex items-center justify-center text-muted-foreground">
+                    <div className="h-64 flex items-center justify-center text-muted-foreground">
                       Pie chart will be rendered here
                     </div>
-                    */
                   </CardContent>
                 </Card>
               </div>
