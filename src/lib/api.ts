@@ -54,7 +54,7 @@ export const analyticsAPI = {
       totalBalance: 125000,
       monthlyIncome: 28000,
       monthlyExpenses: 18500,
-      burnRate: 9500,
+      burnRate: -9500, // Negative because it's money going out (expenses - income)
       runwayMonths: 13,
       growthRate: 8.2
     };

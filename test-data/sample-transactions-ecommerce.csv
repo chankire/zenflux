@@ -1,0 +1,100 @@
+Date,Description,Amount,Type,Category,Reference
+2024-01-01,"Shopify Sales - Daily Batch",12400.50,income,product_sales,SHOP-2024-001
+2024-01-01,"Amazon FBA Sales",8900.25,income,product_sales,AMZ-2024-001
+2024-01-01,"Warehouse Rent",4500.00,expense,warehouse,RENT-W-2024-001
+2024-01-01,"Inventory Purchase - Electronics",25000.00,expense,inventory,INV-ELEC-2024-001
+2024-01-01,"Shipping Costs - Fulfilled Orders",1850.75,expense,shipping,SHIP-2024-001
+2024-01-02,"PayPal Sales",3200.80,income,product_sales,PP-2024-001
+2024-01-02,"Return Processing",450.25,expense,returns,RET-2024-001
+2024-01-02,"Packaging Materials",680.50,expense,packaging,PACK-2024-001
+2024-01-03,"Shopify Sales - Daily Batch",11800.90,income,product_sales,SHOP-2024-002
+2024-01-03,"Google Ads - Product Campaign",2200.00,expense,advertising,GADS-P-2024-001
+2024-01-03,"Credit Card Processing Fees",385.40,expense,payment_processing,CC-2024-001
+2024-01-04,"Amazon FBA Sales",9500.75,income,product_sales,AMZ-2024-002
+2024-01-04,"Inventory Storage Fees",1200.00,expense,storage,STOR-2024-001
+2024-01-04,"Product Photography",800.00,expense,marketing,PHOTO-2024-001
+2024-01-05,"Etsy Sales",1250.30,income,product_sales,ETSY-2024-001
+2024-01-05,"Customer Service Software",150.00,expense,software,CS-2024-001
+2024-01-05,"Inventory Purchase - Clothing",18000.00,expense,inventory,INV-CLOTH-2024-001
+2024-01-08,"Shopify Sales - Daily Batch",13200.40,income,product_sales,SHOP-2024-003
+2024-01-08,"Facebook Ads",1800.00,expense,advertising,FB-ADS-2024-001
+2024-01-08,"Shipping Labels",245.80,expense,shipping,LABEL-2024-001
+2024-01-09,"Amazon FBA Sales",10200.60,income,product_sales,AMZ-2024-003
+2024-01-09,"Product Return - Damaged",320.00,expense,returns,RET-DAM-2024-001
+2024-01-09,"Quality Control Inspection",500.00,expense,quality_control,QC-2024-001
+2024-01-10,"PayPal Sales",2800.90,income,product_sales,PP-2024-002
+2024-01-10,"Inventory Management Software",300.00,expense,software,INV-SOFT-2024-001
+2024-01-10,"Warehouse Utilities",350.00,expense,utilities,UTIL-W-2024-001
+2024-01-11,"Shopify Sales - Daily Batch",14100.20,income,product_sales,SHOP-2024-004
+2024-01-11,"Pinterest Ads",600.00,expense,advertising,PIN-2024-001
+2024-01-11,"Packaging Design",1200.00,expense,design,DESIGN-2024-001
+2024-01-12,"Amazon FBA Sales",8900.45,income,product_sales,AMZ-2024-004
+2024-01-12,"Customer Refund",180.50,expense,refunds,REF-2024-001
+2024-01-12,"Inventory Audit Service",800.00,expense,inventory_management,AUDIT-2024-001
+2024-01-15,"Shopify Sales - Holiday Sale",18900.75,income,product_sales,SHOP-SALE-2024-001
+2024-01-15,"Seasonal Inventory Purchase",35000.00,expense,inventory,INV-SEASON-2024-001
+2024-01-15,"Influencer Marketing",2500.00,expense,marketing,INFLU-2024-001
+2024-01-16,"Amazon FBA Sales",11500.90,income,product_sales,AMZ-2024-005
+2024-01-16,"Long-Term Storage Fees",450.00,expense,storage,LTS-2024-001
+2024-01-16,"Product Compliance Testing",900.00,expense,compliance,COMP-2024-001
+2024-01-17,"eBay Sales",1890.40,income,product_sales,EBAY-2024-001
+2024-01-17,"International Shipping",680.25,expense,shipping,INT-SHIP-2024-001
+2024-01-17,"Translation Services",400.00,expense,localization,TRANS-2024-001
+2024-01-18,"Shopify Sales - Daily Batch",12800.60,income,product_sales,SHOP-2024-005
+2024-01-18,"TikTok Ads",1200.00,expense,advertising,TIKTOK-2024-001
+2024-01-18,"Customer Support Outsourcing",1800.00,expense,customer_service,CS-OUT-2024-001
+2024-01-19,"Amazon FBA Sales",9800.35,income,product_sales,AMZ-2024-006
+2024-01-19,"Product Warranty Claims",250.00,expense,warranties,WARRANTY-2024-001
+2024-01-19,"Inventory Insurance",800.00,expense,insurance,INS-INV-2024-001
+2024-01-22,"Shopify Sales - Daily Batch",15200.80,income,product_sales,SHOP-2024-006
+2024-01-22,"Email Marketing Platform",200.00,expense,marketing,EMAIL-2024-001
+2024-01-22,"Product Reviews Management",300.00,expense,reputation,REVIEW-2024-001
+2024-01-23,"Amazon FBA Sales",10900.50,income,product_sales,AMZ-2024-007
+2024-01-23,"Customs and Duties",1500.00,expense,import_fees,CUSTOMS-2024-001
+2024-01-23,"Product Labeling Service",350.00,expense,labeling,LABEL-SRV-2024-001
+2024-01-24,"PayPal Sales",3500.70,income,product_sales,PP-2024-003
+2024-01-24,"Inventory Loss - Damaged",800.00,expense,inventory_loss,LOSS-2024-001
+2024-01-24,"Warehouse Security System",450.00,expense,security,SEC-W-2024-001
+2024-01-25,"Shopify Sales - Daily Batch",13900.30,income,product_sales,SHOP-2024-007
+2024-01-25,"YouTube Ads",900.00,expense,advertising,YT-2024-001
+2024-01-25,"Product Development",2800.00,expense,product_development,PROD-DEV-2024-001
+2024-01-26,"Amazon FBA Sales",11200.85,income,product_sales,AMZ-2024-008
+2024-01-26,"Sales Tax Payment",2400.00,expense,taxes,SALES-TAX-2024-001
+2024-01-26,"Market Research",600.00,expense,research,RESEARCH-2024-001
+2024-01-29,"Shopify Sales - Daily Batch",14800.40,income,product_sales,SHOP-2024-008
+2024-01-29,"Competitor Analysis Tool",150.00,expense,tools,COMP-TOOL-2024-001
+2024-01-29,"Freight Forwarding",1200.00,expense,logistics,FREIGHT-2024-001
+2024-01-30,"Amazon FBA Sales",12100.60,income,product_sales,AMZ-2024-009
+2024-01-30,"Return Merchandise Authorization",180.00,expense,returns,RMA-2024-001
+2024-01-30,"Brand Protection Services",800.00,expense,brand_protection,BRAND-2024-001
+2024-01-31,"End of Month Inventory Count",0.00,adjustment,inventory_adjustment,INV-ADJ-2024-001
+2024-02-01,"Shopify Sales - Daily Batch",16200.90,income,product_sales,SHOP-2024-009
+2024-02-01,"Warehouse Rent",4500.00,expense,warehouse,RENT-W-2024-002
+2024-02-01,"Valentine's Day Inventory",22000.00,expense,inventory,INV-VDAY-2024-001
+2024-02-02,"Amazon FBA Sales",13400.75,income,product_sales,AMZ-2024-010
+2024-02-02,"Instagram Shopping Ads",1500.00,expense,advertising,IG-SHOP-2024-001
+2024-02-02,"Product Liability Insurance",600.00,expense,insurance,LIABILITY-2024-001
+2024-02-05,"Shopify Sales - Valentine's Promotion",21500.60,income,product_sales,SHOP-VDAY-2024-001
+2024-02-05,"Gift Wrapping Supplies",480.25,expense,packaging,GIFT-2024-001
+2024-02-05,"Seasonal Marketing Campaign",3200.00,expense,marketing,SEASON-MARK-2024-001
+2024-02-06,"Amazon FBA Sales",14200.30,income,product_sales,AMZ-2024-011
+2024-02-06,"Returns - Valentine's Items",890.50,expense,returns,RET-VDAY-2024-001
+2024-02-06,"Customer Loyalty Program",500.00,expense,loyalty,LOYALTY-2024-001
+2024-02-07,"PayPal Sales",4200.80,income,product_sales,PP-2024-004
+2024-02-07,"Inventory Restocking Fee",300.00,expense,restocking,RESTOCK-2024-001
+2024-02-07,"Product Bundle Creation",150.00,expense,bundling,BUNDLE-2024-001
+2024-02-08,"Shopify Sales - Daily Batch",17800.40,income,product_sales,SHOP-2024-010
+2024-02-08,"Cross-border Shipping",950.00,expense,international_shipping,CB-SHIP-2024-001
+2024-02-08,"Currency Exchange Fees",125.80,expense,forex,FOREX-2024-001
+2024-02-09,"Amazon FBA Sales",15600.20,income,product_sales,AMZ-2024-012
+2024-02-09,"Product Recall Insurance",400.00,expense,insurance,RECALL-2024-001
+2024-02-09,"Subscription Box Packaging",680.00,expense,packaging,SUB-PACK-2024-001
+2024-02-12,"Shopify Sales - Daily Batch",16900.70,income,product_sales,SHOP-2024-011
+2024-02-12,"Amazon Sponsored Products",2800.00,expense,advertising,AMZ-SPON-2024-001
+2024-02-12,"Dropshipping Partner Fee",1200.00,expense,dropshipping,DROP-2024-001
+2024-02-13,"Amazon FBA Sales",14800.55,income,product_sales,AMZ-2024-013
+2024-02-13,"Customer Acquisition Campaign",2400.00,expense,customer_acquisition,CAC-2024-001
+2024-02-13,"Wholesale Purchase Agreement",18000.00,expense,inventory,WHOLE-2024-001
+2024-02-14,"Shopify Sales - Valentine's Day",28900.85,income,product_sales,SHOP-VD-2024-001
+2024-02-14,"Express Shipping Upgrade",1800.50,expense,shipping,EXPRESS-2024-001
+2024-02-14,"Gift Card Promotions",500.00,expense,promotions,GIFT-CARD-2024-001

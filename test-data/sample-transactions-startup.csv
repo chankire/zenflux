@@ -1,0 +1,88 @@
+Date,Description,Amount,Type,Category,Reference
+2024-01-01,"Angel Investment - Seed Round",500000.00,income,investment,SEED-2024-001
+2024-01-01,"Founder Initial Capital",50000.00,income,founder_investment,FOUND-2024-001
+2024-01-02,"Legal Fees - Incorporation",5000.00,expense,legal,LEG-CORP-2024-001
+2024-01-02,"Accounting Setup",2500.00,expense,accounting,ACC-SETUP-2024-001
+2024-01-03,"Co-working Space Deposit",2000.00,expense,office,COWORK-2024-001
+2024-01-03,"Domain Registration and Branding",500.00,expense,branding,DOMAIN-2024-001
+2024-01-05,"Initial Team Salaries",15000.00,expense,salaries,SAL-INIT-2024-001
+2024-01-05,"Cloud Infrastructure Setup",800.00,expense,infrastructure,CLOUD-2024-001
+2024-01-08,"Development Tools and Software",1200.00,expense,software,DEV-TOOLS-2024-001
+2024-01-08,"Business Registration Fees",300.00,expense,registration,REG-2024-001
+2024-01-10,"Market Research Survey",800.00,expense,research,MARKET-2024-001
+2024-01-10,"Prototype Development Materials",2000.00,expense,development,PROTO-2024-001
+2024-01-12,"Insurance - General Liability",1500.00,expense,insurance,INS-GL-2024-001
+2024-01-12,"Bank Account Setup",100.00,expense,banking,BANK-SETUP-2024-001
+2024-01-15,"First Customer Payment - Beta",2000.00,income,beta_revenue,BETA-2024-001
+2024-01-15,"Website Development",8000.00,expense,website,WEB-2024-001
+2024-01-17,"Patent Application Filing",10000.00,expense,intellectual_property,PATENT-2024-001
+2024-01-17,"Marketing Materials Design",1500.00,expense,marketing,DESIGN-2024-001
+2024-01-20,"Equipment Purchase - Laptops",6000.00,expense,equipment,LAPTOP-2024-001
+2024-01-20,"Office Furniture",2500.00,expense,furniture,FURN-2024-001
+2024-01-22,"Customer Validation Interviews",500.00,expense,customer_research,INTERVIEW-2024-001
+2024-01-22,"Business Cards and Stationary",200.00,expense,marketing,CARDS-2024-001
+2024-01-25,"Second Angel Investment",200000.00,income,investment,ANGEL-2024-002
+2024-01-25,"Consultant - Business Strategy",5000.00,expense,consulting,CONSULT-2024-001
+2024-01-27,"Trade Show Registration",3000.00,expense,events,TRADE-2024-001
+2024-01-27,"Travel for Investor Meetings",1800.00,expense,travel,TRAVEL-INV-2024-001
+2024-01-30,"Beta Customer Payment #2",2500.00,income,beta_revenue,BETA-2024-002
+2024-01-30,"End Month Expenses Reconciliation",0.00,adjustment,reconciliation,RECON-2024-001
+2024-02-01,"Team Expansion - Two Developers",25000.00,expense,salaries,SAL-EXP-2024-001
+2024-02-01,"Upgrade Cloud Infrastructure",1500.00,expense,infrastructure,CLOUD-UP-2024-001
+2024-02-03,"Customer Discovery Program",1000.00,expense,customer_research,DISC-2024-001
+2024-02-03,"Legal - IP Protection Review",3500.00,expense,legal,LEG-IP-2024-001
+2024-02-05,"Beta Customer Payment #3",3000.00,income,beta_revenue,BETA-2024-003
+2024-02-05,"PR Agency Retainer",4000.00,expense,public_relations,PR-2024-001
+2024-02-08,"Customer Support Tools",600.00,expense,software,CS-TOOLS-2024-001
+2024-02-08,"Data Analytics Platform",800.00,expense,analytics,ANALYTICS-2024-001
+2024-02-10,"Accelerator Program Fee",15000.00,expense,accelerator,ACCEL-2024-001
+2024-02-10,"Mentor Advisory Compensation",2000.00,expense,advisory,MENTOR-2024-001
+2024-02-12,"Early Adopter Customer #1",5000.00,income,early_revenue,EARLY-2024-001
+2024-02-12,"Product Liability Insurance",1200.00,expense,insurance,PROD-INS-2024-001
+2024-02-15,"Series A Preparation - Legal",8000.00,expense,legal,SERIES-A-2024-001
+2024-02-15,"Due Diligence Accounting",3000.00,expense,accounting,DD-ACC-2024-001
+2024-02-17,"Early Adopter Customer #2",4500.00,income,early_revenue,EARLY-2024-002
+2024-02-17,"Cybersecurity Audit",2500.00,expense,security,CYBER-2024-001
+2024-02-20,"Investor Relations Platform",500.00,expense,investor_relations,IR-2024-001
+2024-02-20,"Competitive Analysis Report",1500.00,expense,research,COMP-2024-001
+2024-02-22,"Early Adopter Customer #3",6000.00,income,early_revenue,EARLY-2024-003
+2024-02-22,"Technical Writing Services",2000.00,expense,documentation,TECH-WRITE-2024-001
+2024-02-25,"Employee Stock Option Setup",4000.00,expense,legal,ESOP-2024-001
+2024-02-25,"Recruitment Agency Fee",8000.00,expense,recruitment,RECRUIT-2024-001
+2024-02-27,"Early Adopter Customer #4",7500.00,income,early_revenue,EARLY-2024-004
+2024-02-27,"Quality Assurance Testing",3000.00,expense,qa_testing,QA-2024-001
+2024-02-28,"End Month Growth Analysis",0.00,adjustment,analysis,ANALYSIS-2024-001
+2024-03-01,"Series A Investment - Lead VC",2000000.00,income,series_a,SERIES-A-LEAD-2024-001
+2024-03-01,"Series A Investment - Co-investor 1",500000.00,income,series_a,SERIES-A-CO1-2024-001
+2024-03-01,"Series A Investment - Co-investor 2",500000.00,income,series_a,SERIES-A-CO2-2024-001
+2024-03-02,"Legal Fees - Series A Closing",25000.00,expense,legal,LEG-CLOSE-2024-001
+2024-03-02,"Investment Banking Fees",75000.00,expense,banking,INV-BANK-2024-001
+2024-03-05,"Office Lease - Dedicated Space",8000.00,expense,office,LEASE-2024-001
+2024-03-05,"Office Setup and Renovation",15000.00,expense,office_setup,SETUP-2024-001
+2024-03-08,"Team Expansion - 5 New Hires",45000.00,expense,salaries,SAL-TEAM-2024-001
+2024-03-08,"HR Management System",1200.00,expense,hr_software,HR-2024-001
+2024-03-10,"Customer #1 - Monthly Subscription",8000.00,income,recurring_revenue,SUB-2024-001
+2024-03-10,"Sales CRM Implementation",2400.00,expense,sales_tools,CRM-2024-001
+2024-03-12,"Marketing Campaign Launch",12000.00,expense,marketing,CAMP-LAUNCH-2024-001
+2024-03-12,"Content Marketing Agency",5000.00,expense,content_marketing,CONTENT-2024-001
+2024-03-15,"Customer #2 - Annual Contract",50000.00,income,annual_revenue,ANNUAL-2024-001
+2024-03-15,"Customer Success Platform",1800.00,expense,customer_success,CS-PLAT-2024-001
+2024-03-17,"Compliance and Regulations Setup",6000.00,expense,compliance,COMPLY-2024-001
+2024-03-17,"Security Infrastructure Upgrade",8000.00,expense,security,SEC-UP-2024-001
+2024-03-20,"Customer #3 - Quarterly Contract",18000.00,income,quarterly_revenue,QUAR-2024-001
+2024-03-20,"Advanced Analytics Tools",3000.00,expense,analytics,ANALYTICS-ADV-2024-001
+2024-03-22,"Partnership Integration Costs",4000.00,expense,partnerships,PARTNER-2024-001
+2024-03-22,"API Development and Documentation",7000.00,expense,api_development,API-2024-001
+2024-03-25,"Customer #4 - Enterprise Setup",100000.00,income,enterprise_revenue,ENT-SETUP-2024-001
+2024-03-25,"Enterprise Security Certification",12000.00,expense,certifications,CERT-2024-001
+2024-03-27,"International Expansion Research",8000.00,expense,international,INTL-2024-001
+2024-03-27,"Multi-language Support Development",15000.00,expense,localization,LOCALE-2024-001
+2024-03-29,"Customer #5 - Monthly Subscription",12000.00,income,recurring_revenue,SUB-2024-002
+2024-03-29,"Performance Monitoring Tools",2000.00,expense,monitoring,MONITOR-2024-001
+2024-03-31,"Quarterly Board Meeting Expenses",3000.00,expense,governance,BOARD-2024-001
+2024-04-01,"Customer #6 - Annual Contract",75000.00,income,annual_revenue,ANNUAL-2024-002
+2024-04-01,"Professional Development Budget",10000.00,expense,training,PROF-DEV-2024-001
+2024-04-03,"Customer Support Scaling",6000.00,expense,customer_support,CS-SCALE-2024-001
+2024-04-03,"Automated Testing Infrastructure",5000.00,expense,testing,TEST-AUTO-2024-001
+2024-04-05,"Customer #7 - Pilot Program",25000.00,income,pilot_revenue,PILOT-2024-001
+2024-04-05,"Data Science Team Addition",35000.00,expense,salaries,SAL-DS-2024-001

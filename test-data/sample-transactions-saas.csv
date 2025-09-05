@@ -1,0 +1,85 @@
+Date,Description,Amount,Type,Category,Reference
+2024-01-01,"Stripe Payment - Monthly Subscriptions",45600.00,income,recurring_revenue,INV-2024-001
+2024-01-01,"AWS Infrastructure",2400.00,expense,infrastructure,AWS-2024-001
+2024-01-01,"Office Rent - January",8500.00,expense,office_rent,RENT-2024-001
+2024-01-01,"Salaries - Development Team",125000.00,expense,payroll,PAY-2024-001
+2024-01-01,"Marketing Ads - Google",3200.00,expense,marketing,GADS-2024-001
+2024-01-02,"Stripe Payment - Annual Subscriptions",89400.00,income,recurring_revenue,INV-2024-002
+2024-01-02,"Software Licenses",1800.00,expense,software,LIC-2024-001
+2024-01-03,"Customer Refund",2400.00,expense,refunds,REF-2024-001
+2024-01-03,"Consulting Revenue",12000.00,income,consulting,CONS-2024-001
+2024-01-04,"Equipment Purchase",4500.00,expense,equipment,EQ-2024-001
+2024-01-04,"Legal Fees",3600.00,expense,legal,LEG-2024-001
+2024-01-05,"Stripe Payment - Monthly Subscriptions",47200.00,income,recurring_revenue,INV-2024-003
+2024-01-05,"Insurance Premium",2200.00,expense,insurance,INS-2024-001
+2024-01-08,"Marketing Ads - Facebook",2800.00,expense,marketing,FB-2024-001
+2024-01-08,"Travel Expenses",1200.00,expense,travel,TRV-2024-001
+2024-01-09,"Customer Payment - Enterprise",25000.00,income,enterprise_revenue,ENT-2024-001
+2024-01-10,"Utilities",850.00,expense,utilities,UTIL-2024-001
+2024-01-10,"Internet & Phone",650.00,expense,communications,COMM-2024-001
+2024-01-11,"Stripe Payment - Monthly Subscriptions",48900.00,income,recurring_revenue,INV-2024-004
+2024-01-12,"Bank Fees",45.00,expense,bank_fees,BANK-2024-001
+2024-01-12,"Accounting Services",2500.00,expense,professional_services,ACC-2024-001
+2024-01-15,"Contractor Payment",8000.00,expense,contractors,CONT-2024-001
+2024-01-15,"Office Supplies",480.00,expense,office_supplies,SUP-2024-001
+2024-01-16,"Customer Payment - Custom Development",18000.00,income,custom_development,CDEV-2024-001
+2024-01-17,"Tax Payment",12000.00,expense,taxes,TAX-2024-001
+2024-01-18,"Stripe Payment - Monthly Subscriptions",51200.00,income,recurring_revenue,INV-2024-005
+2024-01-19,"Server Maintenance",1200.00,expense,infrastructure,MAINT-2024-001
+2024-01-22,"Marketing Conference",3500.00,expense,marketing,CONF-2024-001
+2024-01-23,"Employee Benefits",8500.00,expense,benefits,BEN-2024-001
+2024-01-24,"Customer Payment - Enterprise",22000.00,income,enterprise_revenue,ENT-2024-002
+2024-01-25,"Stripe Payment - Monthly Subscriptions",49800.00,income,recurring_revenue,INV-2024-006
+2024-01-26,"Domain Renewals",240.00,expense,domain_hosting,DOM-2024-001
+2024-01-29,"Marketing Ads - LinkedIn",1800.00,expense,marketing,LI-2024-001
+2024-01-30,"Miscellaneous Expenses",320.00,expense,miscellaneous,MISC-2024-001
+2024-01-31,"End of Month Adjustment",0.00,adjustment,adjustment,ADJ-2024-001
+2024-02-01,"Stripe Payment - Monthly Subscriptions",53600.00,income,recurring_revenue,INV-2024-007
+2024-02-01,"AWS Infrastructure",2600.00,expense,infrastructure,AWS-2024-002
+2024-02-01,"Office Rent - February",8500.00,expense,office_rent,RENT-2024-002
+2024-02-01,"Salaries - Development Team",128000.00,expense,payroll,PAY-2024-002
+2024-02-02,"New Customer - Enterprise Setup",35000.00,income,setup_fees,SETUP-2024-001
+2024-02-03,"Customer Refund",1800.00,expense,refunds,REF-2024-002
+2024-02-05,"Stripe Payment - Monthly Subscriptions",55200.00,income,recurring_revenue,INV-2024-008
+2024-02-06,"Marketing Campaign",4200.00,expense,marketing,CAMP-2024-001
+2024-02-07,"Equipment Upgrade",2800.00,expense,equipment,EQ-2024-002
+2024-02-08,"Professional Development",1500.00,expense,training,TRAIN-2024-001
+2024-02-09,"Customer Payment - Consulting",15000.00,income,consulting,CONS-2024-002
+2024-02-10,"Bank Transfer Fee",25.00,expense,bank_fees,BANK-2024-002
+2024-02-12,"Stripe Payment - Monthly Subscriptions",57400.00,income,recurring_revenue,INV-2024-009
+2024-02-13,"Security Audit",6000.00,expense,security,SEC-2024-001
+2024-02-14,"Valentine's Day Team Event",800.00,expense,team_events,EVENT-2024-001
+2024-02-15,"Contractor Payment",9500.00,expense,contractors,CONT-2024-002
+2024-02-16,"Customer Payment - Enterprise",28000.00,income,enterprise_revenue,ENT-2024-003
+2024-02-19,"Stripe Payment - Monthly Subscriptions",58900.00,income,recurring_revenue,INV-2024-010
+2024-02-20,"Office Cleaning Service",450.00,expense,cleaning,CLEAN-2024-001
+2024-02-21,"Legal Consultation",2400.00,expense,legal,LEG-2024-002
+2024-02-22,"Marketing Analytics Tool",1200.00,expense,software,SOFT-2024-001
+2024-02-23,"Customer Payment - Custom Feature",20000.00,income,custom_development,CDEV-2024-002
+2024-02-26,"Stripe Payment - Monthly Subscriptions",60100.00,income,recurring_revenue,INV-2024-011
+2024-02-27,"Travel - Client Meeting",2200.00,expense,travel,TRV-2024-002
+2024-02-28,"End of Month Reconciliation",150.00,adjustment,adjustment,ADJ-2024-002
+2024-03-01,"Stripe Payment - Quarterly Subscriptions",180000.00,income,recurring_revenue,INV-2024-012
+2024-03-01,"AWS Infrastructure",2800.00,expense,infrastructure,AWS-2024-003
+2024-03-01,"Office Rent - March",8500.00,expense,office_rent,RENT-2024-003
+2024-03-01,"Salaries - All Departments",145000.00,expense,payroll,PAY-2024-003
+2024-03-04,"New Enterprise Client Onboarding",50000.00,income,setup_fees,SETUP-2024-002
+2024-03-05,"Stripe Payment - Monthly Subscriptions",62400.00,income,recurring_revenue,INV-2024-013
+2024-03-06,"Marketing - Trade Show Booth",8500.00,expense,marketing,SHOW-2024-001
+2024-03-07,"Equipment - New Servers",12000.00,expense,equipment,EQ-2024-003
+2024-03-08,"Women's Day Team Celebration",600.00,expense,team_events,EVENT-2024-002
+2024-03-11,"Customer Payment - Enterprise",32000.00,income,enterprise_revenue,ENT-2024-004
+2024-03-12,"Stripe Payment - Monthly Subscriptions",64800.00,income,recurring_revenue,INV-2024-014
+2024-03-13,"Insurance Premium - Quarterly",6600.00,expense,insurance,INS-2024-002
+2024-03-14,"Customer Success Tools",2400.00,expense,software,SOFT-2024-002
+2024-03-15,"Tax Advisory Services",4500.00,expense,professional_services,TAX-2024-002
+2024-03-18,"Customer Payment - Consulting",18000.00,income,consulting,CONS-2024-003
+2024-03-19,"Stripe Payment - Monthly Subscriptions",66200.00,income,recurring_revenue,INV-2024-015
+2024-03-20,"Office Renovation",15000.00,expense,office_improvement,RENO-2024-001
+2024-03-21,"Team Building Event",3200.00,expense,team_events,EVENT-2024-003
+2024-03-22,"Customer Refund - Downgrade",3600.00,expense,refunds,REF-2024-003
+2024-03-25,"Customer Payment - Enterprise",38000.00,income,enterprise_revenue,ENT-2024-005
+2024-03-26,"Stripe Payment - Monthly Subscriptions",68500.00,income,recurring_revenue,INV-2024-016
+2024-03-27,"Backup & Recovery Service",1800.00,expense,infrastructure,BACKUP-2024-001
+2024-03-28,"Marketing - Content Creation",2800.00,expense,marketing,CONTENT-2024-001
+2024-03-29,"End of Quarter Bonus",25000.00,expense,bonuses,BONUS-2024-001
