@@ -1,169 +1,68 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useForm } from "react-hook-form";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Chrome, Mail, ArrowLeft, Loader2, Shield } from "lucide-react";
+import { ArrowLeft, Loader2, Shield } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 interface AuthFormData {
   email: string;
   password: string;
   firstName?: string;
   lastName?: string;
-  newPassword?: string;
-  confirmPassword?: string;
 }
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const [isResetPassword, setIsResetPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [useMagicLink, setUseMagicLink] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signIn } = useAuth();
 
-  const { register, handleSubmit, reset, formState: { errors }, watch } = useForm<AuthFormData>();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<AuthFormData>();
 
-  useEffect(() => {
-    // Handle password recovery flow from Supabase email link
-    const handleAuthRedirect = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      
-      // Check URL params for password recovery
-      const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
-      const type = hashParams.get('type');
-      const accessToken = hashParams.get('access_token');
-      
-      if (type === 'recovery' && accessToken) {
-        setIsResetPassword(true);
-        setIsSignUp(false);
-        setIsForgotPassword(false);
+  const onSubmit = async (data: AuthFormData) => {
+    setLoading(true);
+    try {
+      if (isSignUp) {
+        // For the mock system, we'll just redirect to sign in
         toast({
-          title: "Password Reset Ready",
-          description: "Enter your new password below.",
+          title: "Sign Up Not Available",
+          description: "Please use the test login: test@example.com / testpass",
         });
-      } else if (data?.session?.user && !isResetPassword) {
-        // User is already authenticated, redirect to dashboard
-        navigate("/dashboard");
+        setIsSignUp(false);
+        return;
       }
-    };
 
-    handleAuthRedirect();
-  }, [navigate, toast, isResetPassword]);
-
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      // Use production URL for OAuth redirect in production, local URL for development
-      const redirectUrl = import.meta.env.VITE_APP_URL 
-        ? `${import.meta.env.VITE_APP_URL}/dashboard`
-        : `${window.location.origin}/dashboard`;
-        
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl
-        }
+      // Use mock authentication
+      const { error } = await signIn(data.email, data.password);
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Sign In Failed",
+          description: error.message || "Invalid credentials. Use test@example.com / testpass",
+        });
+        return;
+      }
+      
+      toast({ 
+        title: "Welcome Back!", 
+        description: "You've been signed in successfully." 
       });
-
-      if (error) throw error;
+      navigate("/dashboard");
+      
     } catch (error: any) {
-      console.error('Google sign-in error:', error);
-      toast({
-        variant: "destructive",
-        title: "Google Sign-In Failed",
-        description: "Please try another sign-in method.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async (email: string) => {
-    if (!email) {
+      console.error('Authentication error:', error);
       toast({ 
         variant: "destructive", 
-        title: "Email Required", 
-        description: "Please enter your email address." 
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Use production URL for password reset in production, local URL for development
-      const redirectUrl = import.meta.env.VITE_APP_URL 
-        ? `${import.meta.env.VITE_APP_URL}/auth`
-        : `${window.location.origin}/auth`;
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Password Reset Email Sent",
-        description: "Check your email and click the reset link to set a new password.",
-      });
-      
-      setIsForgotPassword(false);
-    } catch (error: any) {
-      console.error('Password reset error:', error);
-      toast({
-        variant: "destructive",
-        title: "Password Reset Failed",
-        description: "Please check your email and try again.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleMagicLink = async (email: string) => {
-    if (!email) {
-      toast({ 
-        variant: "destructive", 
-        title: "Email Required", 
-        description: "Please enter your email address." 
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Use production URL for magic link redirect in production, local URL for development
-      const redirectUrl = import.meta.env.VITE_APP_URL 
-        ? `${import.meta.env.VITE_APP_URL}/dashboard`
-        : `${window.location.origin}/dashboard`;
-        
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: redirectUrl,
-        }
-      });
-
-      if (error) throw error;
-
-      setMagicLinkSent(true);
-      toast({
-        title: "Magic Link Sent!",
-        description: "Check your email and click the link to sign in.",
-      });
-    } catch (error: any) {
-      console.error('Magic link error:', error);
-      toast({
-        variant: "destructive",
-        title: "Magic Link Failed",
-        description: "Please try again or use password sign-in.",
+        title: "Authentication Failed",
+        description: "Please try test@example.com / testpass"
       });
     } finally {
       setLoading(false);
@@ -173,45 +72,16 @@ const Auth = () => {
   const handleTestUserLogin = async () => {
     setLoading(true);
     try {
-      // Use backend test login endpoint
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://zenflux-backend.vercel.app';
+      const { error } = await signIn('test@example.com', 'testpass');
       
-      const response = await fetch(`${backendUrl}/api/auth/test-login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: 'test@zenflux.ai',
-          password: 'testpassword123'
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error?.message || 'Test login failed');
-      }
-
-      // Set the session in Supabase client
-      if (data.data.session) {
-        await supabase.auth.setSession(data.data.session);
+      if (error) {
+        throw new Error(error.message);
       }
 
       toast({
         title: "Test User Logged In!",
-        description: "You're now signed in as the test user with sample data.",
+        description: "You're now signed in with the demo account.",
       });
-
-      // Seed test data if needed
-      try {
-        await fetch(`${backendUrl}/api/seed-test-data`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } catch (seedError) {
-        console.log('Test data seeding skipped (may already exist)');
-      }
 
       navigate("/dashboard");
     } catch (error: any) {
@@ -220,203 +90,6 @@ const Auth = () => {
         variant: "destructive",
         title: "Test Login Failed",
         description: error.message || "Could not log in test user.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onSubmit = async (data: AuthFormData) => {
-    // Handle password reset flow
-    if (isResetPassword) {
-      if (!data.newPassword || !data.confirmPassword) {
-        toast({ 
-          variant: "destructive", 
-          title: "Password Required", 
-          description: "Please enter and confirm your new password." 
-        });
-        return;
-      }
-      
-      if (data.newPassword !== data.confirmPassword) {
-        toast({ 
-          variant: "destructive", 
-          title: "Passwords Don't Match", 
-          description: "Please ensure both passwords are identical." 
-        });
-        return;
-      }
-      
-      if (data.newPassword.length < 6) {
-        toast({ 
-          variant: "destructive", 
-          title: "Password Too Short", 
-          description: "Password must be at least 6 characters long." 
-        });
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const { error } = await supabase.auth.updateUser({ 
-          password: data.newPassword 
-        });
-        
-        if (error) throw error;
-
-        // Clean up URL hash after successful reset
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-        toast({ 
-          title: "Password Updated Successfully", 
-          description: "You can now sign in with your new password." 
-        });
-        
-        setIsResetPassword(false);
-        navigate("/dashboard");
-      } catch (error: any) {
-        console.error('Password update error:', error);
-        toast({ 
-          variant: "destructive", 
-          title: "Password Update Failed", 
-          description: "Please try the password reset process again." 
-        });
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
-    // Handle forgot password
-    if (isForgotPassword) {
-      await handleForgotPassword(data.email);
-      return;
-    }
-
-    // Handle magic link
-    if (useMagicLink && !isSignUp) {
-      await handleMagicLink(data.email);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      if (isSignUp) {
-        // Sign up flow - enhanced debugging
-        console.log('Attempting signup with:', {
-          email: data.email.trim().toLowerCase(),
-          hasPassword: !!data.password,
-          passwordLength: data.password?.length,
-          firstName: data.firstName?.trim(),
-          lastName: data.lastName?.trim()
-        });
-
-        // Use production URL for email verification redirect in production, local URL for development
-        const redirectUrl = import.meta.env.VITE_APP_URL 
-          ? `${import.meta.env.VITE_APP_URL}/dashboard`
-          : `${window.location.origin}/dashboard`;
-
-        const { data: signUpResult, error } = await supabase.auth.signUp({
-          email: data.email.trim().toLowerCase(),
-          password: data.password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              first_name: data.firstName?.trim() || '',
-              last_name: data.lastName?.trim() || '',
-              full_name: `${data.firstName?.trim() || ''} ${data.lastName?.trim() || ''}`.trim()
-            }
-          }
-        });
-
-        console.log('Signup result:', signUpResult);
-        console.log('Signup error:', error);
-
-        if (error) {
-          // Handle specific signup errors
-          if (error.message.includes("already registered") || 
-              error.message.includes("already been taken") ||
-              error.message.includes("duplicate")) {
-            toast({
-              variant: "destructive",
-              title: "Email Already Registered",
-              description: "This email is already in use. Please sign in instead.",
-              action: <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setIsSignUp(false)}
-              >
-                Sign In
-              </Button>
-            });
-            setTimeout(() => setIsSignUp(false), 2000);
-            return;
-          }
-          throw error;
-        }
-
-        if (signUpResult.user && !signUpResult.session) {
-          toast({ 
-            title: "Account Created!", 
-            description: "Please check your email to verify your account." 
-          });
-        } else if (signUpResult.session) {
-          toast({ 
-            title: "Welcome to ZenFlux!", 
-            description: "Your account has been created successfully." 
-          });
-          navigate("/dashboard");
-        }
-      } else {
-        // Sign in flow
-        const { error } = await supabase.auth.signInWithPassword({ 
-          email: data.email.trim().toLowerCase(), 
-          password: data.password 
-        });
-        
-        if (error) {
-          if (error.message.includes("Invalid login credentials")) {
-            toast({
-              variant: "destructive",
-              title: "Invalid Credentials",
-              description: "Email or password is incorrect. Try the magic link option instead.",
-              action: <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setUseMagicLink(true)}
-              >
-                Use Magic Link
-              </Button>
-            });
-            return;
-          }
-          throw error;
-        }
-        
-        toast({ 
-          title: "Welcome Back!", 
-          description: "You've been signed in successfully." 
-        });
-        navigate("/dashboard");
-      }
-    } catch (error: any) {
-      console.error('Authentication error:', error);
-      
-      let title = "Authentication Failed";
-      let description = "An unexpected error occurred. Please try again.";
-      
-      if (error.message?.includes("Email not confirmed")) {
-        title = "Email Not Verified";
-        description = "Please check your email and click the verification link.";
-      } else if (error.message?.includes("rate limit")) {
-        title = "Too Many Attempts";
-        description = "Please wait a few minutes before trying again.";
-      }
-      
-      toast({ 
-        variant: "destructive", 
-        title, 
-        description 
       });
     } finally {
       setLoading(false);
@@ -443,299 +116,128 @@ const Auth = () => {
               </div>
             </div>
             <CardTitle className="text-2xl text-center">
-              {isResetPassword
-                ? "Set New Password"
-                : isForgotPassword
-                ? "Reset Password"
-                : magicLinkSent
-                ? "Check Your Email"
-                : isSignUp
-                ? "Create Account"
-                : "Welcome Back"}
+              {isSignUp ? "Create Account" : "Welcome Back"}
             </CardTitle>
             <CardDescription className="text-center">
-              {isResetPassword
-                ? "Enter your new password to complete the reset"
-                : isForgotPassword
-                ? "Enter your email to receive a password reset link"
-                : magicLinkSent
-                ? "We've sent you a secure sign-in link via email"
-                : isSignUp
-                ? "Start forecasting with enterprise-grade AI"
-                : useMagicLink
-                ? "Sign in securely with a magic link"
+              {isSignUp 
+                ? "Sign up is disabled in demo mode" 
                 : "Sign in to access your AI forecasting dashboard"}
             </CardDescription>
           </CardHeader>
           
           <CardContent>
-            {magicLinkSent ? (
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                  <Mail className="w-8 h-8 text-green-600" />
-                </div>
-                <p className="text-muted-foreground">
-                  Click the secure link in your email to access ZenFlux
-                </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setMagicLinkSent(false)}
-                  className="w-full"
-                >
-                  Back to Sign In
-                </Button>
-              </div>
-            ) : (
+            <div className="space-y-4">
+              {/* Demo Notice */}
+              <Alert>
+                <Shield className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Demo Mode:</strong> Use <code>test@example.com</code> with password <code>testpass</code>
+                </AlertDescription>
+              </Alert>
+
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                {/* Password Reset Form */}
-                {isResetPassword && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                      <Shield className="w-5 h-5 text-blue-600" />
-                      <span className="text-blue-800 text-sm">Enter your new secure password</span>
-                    </div>
-                    
+                {/* Sign Up Fields - disabled in demo */}
+                {isSignUp && (
+                  <div className="grid grid-cols-2 gap-2 opacity-50">
                     <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
+                      <Label htmlFor="firstName">First Name</Label>
                       <Input
-                        id="newPassword"
-                        type="password"
-                        placeholder="New password (A-z, 0-9, !@#$)"
-                        {...register("newPassword", { 
-                          required: "Password is required",
-                          minLength: { value: 8, message: "Password must be at least 8 characters" },
-                          pattern: {
-                            value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"|<>?,./`~])/,
-                            message: "Password must contain uppercase, lowercase, number, and special character"
-                          }
-                        })}
-                        className={errors.newPassword ? "border-red-500" : ""}
+                        id="firstName"
+                        placeholder="John"
+                        disabled
+                        {...register("firstName")}
                       />
-                      {errors.newPassword && (
-                        <p className="text-red-500 text-xs">{errors.newPassword.message}</p>
-                      )}
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Must contain: uppercase (A-Z), lowercase (a-z), number (0-9), special character (!@#$...)
-                      </p>
                     </div>
-                    
                     <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                      <Label htmlFor="lastName">Last Name</Label>
                       <Input
-                        id="confirmPassword"
-                        type="password"
-                        placeholder="Confirm new password"
-                        {...register("confirmPassword", { 
-                          required: "Please confirm your password",
-                          validate: value => value === watch('newPassword') || "Passwords don't match"
-                        })}
-                        className={errors.confirmPassword ? "border-red-500" : ""}
+                        id="lastName"
+                        placeholder="Doe"
+                        disabled
+                        {...register("lastName")}
                       />
-                      {errors.confirmPassword && (
-                        <p className="text-red-500 text-xs">{errors.confirmPassword.message}</p>
-                      )}
                     </div>
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Updating Password...
-                        </>
-                      ) : (
-                        "Update Password"
-                      )}
-                    </Button>
                   </div>
                 )}
 
-                {/* Forgot Password Form */}
-                {isForgotPassword && !isResetPassword && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email address"
-                        {...register("email", { 
-                          required: "Email is required",
-                          pattern: { value: /^\S+@\S+$/i, message: "Invalid email address" }
-                        })}
-                      />
-                    </div>
-                    
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Sending Reset Link...
-                        </>
-                      ) : (
-                        "Send Reset Link"
-                      )}
-                    </Button>
-                    
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      className="w-full"
-                      onClick={() => setIsForgotPassword(false)}
-                    >
-                      Back to Sign In
-                    </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="test@example.com"
+                    {...register("email", { required: "Email is required" })}
+                    className={errors.email ? "border-red-500" : ""}
+                  />
+                  {errors.email && (
+                    <p className="text-red-500 text-xs">{errors.email.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="testpass"
+                    {...register("password", { required: "Password is required" })}
+                    className={errors.password ? "border-red-500" : ""}
+                  />
+                  {errors.password && (
+                    <p className="text-red-500 text-xs">{errors.password.message}</p>
+                  )}
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={loading || isSignUp}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Signing In...
+                    </>
+                  ) : (
+                    isSignUp ? "Sign Up Disabled" : "Sign In"
+                  )}
+                </Button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
                   </div>
-                )}
-
-                {/* Main Auth Form */}
-                {!isForgotPassword && !isResetPassword && (
-                  <div className="space-y-4">
-                    {/* Sign Up Fields */}
-                    {isSignUp && (
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-2">
-                          <Label htmlFor="firstName">First Name</Label>
-                          <Input
-                            id="firstName"
-                            placeholder="John"
-                            {...register("firstName", { required: isSignUp })}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="lastName">Last Name</Label>
-                          <Input
-                            id="lastName"
-                            placeholder="Doe"
-                            {...register("lastName", { required: isSignUp })}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        {...register("email", { required: "Email is required" })}
-                      />
-                    </div>
-
-                    {!useMagicLink && (
-                      <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                          id="password"
-                          type="password"
-                          placeholder={isSignUp ? "Password (A-z, 0-9, !@#$)" : "Enter your password"}
-                          {...register("password", { 
-                            required: !useMagicLink,
-                            minLength: isSignUp ? { value: 8, message: "Minimum 8 characters" } : undefined,
-                            pattern: isSignUp ? {
-                              value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"|<>?,./`~])/,
-                              message: "Password must contain uppercase, lowercase, number, and special character"
-                            } : undefined
-                          })}
-                        />
-                        {isSignUp && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Must contain: uppercase (A-Z), lowercase (a-z), number (0-9), special character (!@#$...)
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {isSignUp ? "Creating Account..." : useMagicLink ? "Sending Link..." : "Signing In..."}
-                        </>
-                      ) : (
-                        <>
-                          {isSignUp ? "Create Account" : useMagicLink ? "Send Magic Link" : "Sign In"}
-                        </>
-                      )}
-                    </Button>
-
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">Or</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      onClick={handleGoogleSignIn}
-                      disabled={loading}
-                    >
-                      <Chrome className="w-4 h-4 mr-2" />
-                      Continue with Google
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-dashed border-blue-200 hover:border-blue-300"
-                      onClick={handleTestUserLogin}
-                      disabled={loading}
-                    >
-                      <Shield className="w-4 h-4 mr-2" />
-                      Quick Test Login (Demo)
-                    </Button>
-
-                    {!isSignUp && (
-                      <div className="flex items-center justify-between text-sm">
-                        <Button
-                          type="button"
-                          variant="link"
-                          className="p-0 h-auto"
-                          onClick={() => setUseMagicLink(!useMagicLink)}
-                        >
-                          {useMagicLink ? "Use Password Instead" : "Use Magic Link"}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="link"
-                          className="p-0 h-auto"
-                          onClick={() => setIsForgotPassword(true)}
-                        >
-                          Forgot Password?
-                        </Button>
-                      </div>
-                    )}
-
-                    <div className="text-center">
-                      <Button
-                        type="button"
-                        variant="link"
-                        onClick={() => {
-                          setIsSignUp(!isSignUp);
-                          setUseMagicLink(false);
-                          reset();
-                        }}
-                      >
-                        {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
-                      </Button>
-                    </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">Or</span>
                   </div>
-                )}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-dashed border-blue-200 hover:border-blue-300"
+                  onClick={handleTestUserLogin}
+                  disabled={loading}
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  Quick Test Login (Demo)
+                </Button>
+
+                <div className="text-center">
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={() => {
+                      setIsSignUp(!isSignUp);
+                      reset();
+                    }}
+                    disabled={loading}
+                  >
+                    {isSignUp ? "Back to Sign In" : "Need an account? (Demo Only)"}
+                  </Button>
+                </div>
               </form>
-            )}
+            </div>
           </CardContent>
         </Card>
       </div>

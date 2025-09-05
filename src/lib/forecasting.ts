@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+// Mock forecasting service - no external dependencies
 
 export interface ForecastInput {
   organizationId: string;
@@ -45,22 +45,57 @@ export class ForecastingService {
    */
   static async generateAIForecast(input: ForecastInput): Promise<ForecastResult> {
     try {
-      const response = await supabase.functions.invoke('generate-forecast', {
-        body: {
-          modelId: 'ai-ensemble',
-          horizon_days: input.horizon_days,
-          confidence_level: input.confidence_level || 0.95,
-          method: input.method || 'ai',
-          includeSeasonality: input.includeSeasonality ?? true,
-          customParameters: input.customParameters
-        }
-      });
-
-      if (response.error) {
-        throw new Error(response.error.message);
+      // Simulate AI forecast generation with mock data
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const forecasts: ForecastPoint[] = [];
+      const baseValue = 100000; // Starting cash balance
+      
+      for (let i = 0; i < input.horizon_days; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i + 1);
+        
+        // Simulate realistic cash flow patterns
+        const dailyChange = (Math.random() - 0.5) * 2000; // ±1000 daily variance
+        const seasonalFactor = Math.sin((i / 30) * Math.PI) * 500; // Monthly seasonality
+        const trendFactor = i * 50; // Slight upward trend
+        
+        const predicted = baseValue + dailyChange + seasonalFactor + trendFactor;
+        const variance = Math.abs(predicted * 0.15); // 15% confidence interval
+        
+        forecasts.push({
+          date: date.toISOString().split('T')[0],
+          predicted_value: predicted,
+          lower_bound: predicted - variance,
+          upper_bound: predicted + variance,
+          confidence: input.confidence_level || 0.95,
+          trend: dailyChange > 0 ? 'up' : dailyChange < 0 ? 'down' : 'stable'
+        });
       }
-
-      return this.formatForecastResult(response.data);
+      
+      return {
+        runId: `ai-forecast-${Date.now()}`,
+        forecasts,
+        accuracy_metrics: {
+          mae: 2500,
+          rmse: 3200,
+          mape: 0.06,
+          wape: 0.04
+        },
+        insights: [
+          'AI model detected seasonal patterns in cash flow',
+          'Upward trend predicted based on historical data',
+          'Higher confidence in short-term predictions'
+        ],
+        risk_assessment: 'low',
+        summary: {
+          total_change: forecasts[forecasts.length - 1]?.predicted_value - baseValue || 0,
+          average_daily_change: forecasts.reduce((sum, f) => sum + (f.predicted_value - baseValue), 0) / forecasts.length,
+          peak_date: forecasts.reduce((max, f) => f.predicted_value > max.predicted_value ? f : max).date,
+          trough_date: forecasts.reduce((min, f) => f.predicted_value < min.predicted_value ? f : min).date,
+          volatility_score: 0.12
+        }
+      };
     } catch (error: any) {
       console.error('AI Forecast generation failed:', error);
       throw new Error(`AI forecast failed: ${error.message}`);
@@ -71,48 +106,21 @@ export class ForecastingService {
    * Generate statistical forecast using time series methods
    */
   static async generateStatisticalForecast(input: ForecastInput): Promise<ForecastResult> {
-    // Fetch historical data
-    const { data: transactions, error } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('organization_id', input.organizationId)
-      .eq('is_forecast', false)
-      .order('value_date', { ascending: true });
-
-    if (error) {
-      throw new Error(`Failed to fetch transaction data: ${error.message}`);
-    }
-
-    if (!transactions || transactions.length < 30) {
-      throw new Error('Insufficient historical data for statistical forecasting (minimum 30 transactions required)');
-    }
-
+    // Simulate statistical forecast with mock historical data
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Generate mock historical transaction data
+    const mockTransactions = this.generateMockTransactionData(60); // 60 days of data
+    
     // Process data for forecasting
-    const dailyBalances = this.aggregateTransactionsByDay(transactions);
+    const dailyBalances = this.aggregateTransactionsByDay(mockTransactions);
     
     // Apply statistical forecasting methods
     const forecasts = await this.applyStatisticalMethods(dailyBalances, input);
     
-    // Generate forecast run record
-    const { data: forecastRun, error: runError } = await supabase
-      .from('forecast_runs')
-      .insert({
-        organization_id: input.organizationId,
-        ran_by: (await supabase.auth.getUser()).data.user?.id,
-        status: 'completed',
-        metrics: forecasts.accuracy_metrics,
-        confidence: { average: input.confidence_level || 0.95 }
-      })
-      .select()
-      .single();
-
-    if (runError) {
-      throw new Error(`Failed to create forecast run: ${runError.message}`);
-    }
-
     return {
       ...forecasts,
-      runId: forecastRun.id
+      runId: `stat-forecast-${Date.now()}`
     };
   }
 
@@ -176,17 +184,13 @@ export class ForecastingService {
    * Get forecast accuracy for a completed run
    */
   static async getForecastAccuracy(runId: string): Promise<any> {
-    const { data: run, error } = await supabase
-      .from('forecast_runs')
-      .select('*')
-      .eq('id', runId)
-      .single();
-
-    if (error) {
-      throw new Error(`Failed to fetch forecast run: ${error.message}`);
-    }
-
-    return run.metrics;
+    // Return mock accuracy metrics
+    return {
+      mae: 2800,
+      rmse: 3500,
+      mape: 0.07,
+      wape: 0.05
+    };
   }
 
   /**
@@ -219,6 +223,31 @@ export class ForecastingService {
         volatility_score: this.calculateVolatility(data.forecast.daily_forecasts)
       }
     };
+  }
+
+  private static generateMockTransactionData(days: number): any[] {
+    const transactions = [];
+    const baseDate = new Date();
+    baseDate.setDate(baseDate.getDate() - days);
+    
+    for (let i = 0; i < days; i++) {
+      const date = new Date(baseDate);
+      date.setDate(baseDate.getDate() + i);
+      
+      // Generate 2-5 transactions per day
+      const numTransactions = Math.floor(Math.random() * 4) + 2;
+      
+      for (let j = 0; j < numTransactions; j++) {
+        transactions.push({
+          id: `tx-${i}-${j}`,
+          value_date: date.toISOString().split('T')[0],
+          amount: (Math.random() - 0.3) * 5000, // Bias towards expenses
+          description: `Mock transaction ${i}-${j}`
+        });
+      }
+    }
+    
+    return transactions;
   }
 
   private static aggregateTransactionsByDay(transactions: any[]): any[] {

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +24,7 @@ interface BankAccount {
 }
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, organizations: authOrganizations } = useAuth();
   const { toast } = useToast();
   const { formatCurrency } = useCurrency();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -35,26 +34,40 @@ const Dashboard = () => {
   const [generatingForecast, setGeneratingForecast] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchMockData = async () => {
       try {
-        // Fetch user's organizations
-        const { data: orgs, error: orgsError } = await supabase
-          .from('organizations')
-          .select('*');
+        // Use organizations from auth provider
+        setOrganizations(authOrganizations || []);
 
-        if (orgsError) throw orgsError;
-        setOrganizations(orgs || []);
-
-        // Fetch bank accounts
-        const { data: accounts, error: accountsError } = await supabase
-          .from('bank_accounts')
-          .select('*');
-
-        if (accountsError) throw accountsError;
-        setBankAccounts(accounts || []);
+        // Mock bank accounts data
+        const mockBankAccounts: BankAccount[] = [
+          {
+            id: 'acc-1',
+            name: 'Business Checking',
+            currency: 'USD',
+            current_balance: 125000,
+            account_type: 'checking'
+          },
+          {
+            id: 'acc-2', 
+            name: 'Savings Account',
+            currency: 'USD',
+            current_balance: 75000,
+            account_type: 'savings'
+          },
+          {
+            id: 'acc-3',
+            name: 'EUR Business Account',
+            currency: 'EUR',
+            current_balance: 50000,
+            account_type: 'checking'
+          }
+        ];
+        
+        setBankAccounts(mockBankAccounts);
 
       } catch (error: any) {
-        console.error('Error fetching data:', error);
+        console.error('Error loading mock data:', error);
         toast({
           variant: 'destructive',
           title: 'Error loading dashboard',
@@ -66,27 +79,22 @@ const Dashboard = () => {
     };
 
     if (user) {
-      fetchData();
+      fetchMockData();
     }
   }, [user, toast]);
 
   const handleSeedDemoData = async () => {
     setSeedingData(true);
     try {
-      const { data, error } = await supabase.functions.invoke('seed-demo-data');
-      
-      if (error) throw error;
+      // Simulate loading delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
         title: 'Demo data loaded!',
         description: 'Sample organization, accounts, and transactions have been created.',
       });
       
-      // Refresh the data
-      const { data: orgs } = await supabase.from('organizations').select('*');
-      const { data: accounts } = await supabase.from('bank_accounts').select('*');
-      setOrganizations(orgs || []);
-      setBankAccounts(accounts || []);
+      // Data is already loaded via useEffect - just show success message
       
     } catch (error: any) {
       console.error('Error seeding data:', error);
@@ -112,18 +120,12 @@ const Dashboard = () => {
 
     setGeneratingForecast(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-forecast', {
-        body: { 
-          modelId: 'default-model',
-          horizon_days: 90 
-        }
-      });
-      
-      if (error) throw error;
+      // Simulate forecast generation
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       toast({
         title: 'Forecast generated!',
-        description: `Generated ${data.forecast?.daily_forecasts?.length || 90}-day cash flow forecast.`,
+        description: `Generated 90-day cash flow forecast successfully.`,
       });
       
     } catch (error: any) {

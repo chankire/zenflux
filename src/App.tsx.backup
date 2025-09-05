@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { useState, useEffect } from "react";
@@ -29,12 +30,27 @@ const AppRoutes = () => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    // Mock implementation - user is always considered onboarded in demo mode
-    if (user) {
-      setNeedsOnboarding(false);
-    } else {
-      setNeedsOnboarding(null);
-    }
+    const checkOnboardingStatus = async () => {
+      if (!user) {
+        setNeedsOnboarding(null);
+        return;
+      }
+
+      try {
+        const { data: memberships } = await supabase
+          .from('memberships')
+          .select('organization_id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+        setNeedsOnboarding(!memberships || memberships.length === 0);
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+        setNeedsOnboarding(true);
+      }
+    };
+
+    checkOnboardingStatus();
   }, [user]);
 
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -7,56 +7,60 @@ const Debug = () => {
   const [debugInfo, setDebugInfo] = useState<any>({});
   const [testResults, setTestResults] = useState<any>({});
 
+  const { user, session, loading, signIn, signOut } = useAuth();
+
   useEffect(() => {
     // Check environment variables and configuration
     const info = {
-      supabaseUrl: import.meta.env.VITE_SUPABASE_URL || 'NOT SET',
-      supabaseKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? 'SET' : 'NOT SET',
-      clientUrl: 'PROTECTED_PROPERTY',
-      clientKey: 'PROTECTED_PROPERTY',
-      environment: import.meta.env.MODE
+      authSystem: 'MOCK_AUTHENTICATION',
+      environment: import.meta.env.MODE,
+      userId: user?.id || 'NOT_LOGGED_IN',
+      userEmail: user?.email || 'NOT_LOGGED_IN',
+      sessionActive: session ? 'YES' : 'NO'
     };
     setDebugInfo(info);
-  }, []);
+  }, [user, session]);
 
-  const testConnection = async () => {
+  const testAuthentication = async () => {
     const results: any = {};
     
     try {
-      // Test 1: Basic connection
-      console.log('Testing Supabase connection...');
-      const { data, error } = await supabase.from('organizations').select('count').limit(1);
-      results.connection = error ? `ERROR: ${error.message}` : 'SUCCESS';
+      // Test 1: Check current auth state
+      console.log('Testing authentication state...');
+      results.authState = user ? `LOGGED IN as ${user.email}` : 'NOT LOGGED IN';
+      results.sessionState = session ? 'SESSION ACTIVE' : 'NO SESSION';
     } catch (err: any) {
-      results.connection = `EXCEPTION: ${err.message}`;
+      results.authState = `EXCEPTION: ${err.message}`;
     }
 
     try {
-      // Test 2: Auth status
-      console.log('Testing auth status...');
-      const { data: { session }, error } = await supabase.auth.getSession();
-      results.authSession = error ? `ERROR: ${error.message}` : session ? 'LOGGED IN' : 'NOT LOGGED IN';
-    } catch (err: any) {
-      results.authSession = `EXCEPTION: ${err.message}`;
-    }
-
-    try {
-      // Test 3: Simple auth test (sign in with existing user)
-      console.log('Testing auth signin...');
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'test@example.com',
-        password: 'wrongpassword'  // Intentionally wrong to test error handling
-      });
-      // We expect this to fail with "Invalid login credentials"
-      if (error && error.message.includes('Invalid login credentials')) {
-        results.authTest = 'SUCCESS (Auth endpoint working - invalid credentials as expected)';
-      } else if (error) {
-        results.authTest = `ERROR: ${error.message}`;
+      // Test 2: Test login with wrong credentials
+      console.log('Testing auth with wrong credentials...');
+      const { error } = await signIn('test@example.com', 'wrongpassword');
+      if (error) {
+        results.authTestFail = `SUCCESS (Auth working - rejected bad credentials): ${error.message}`;
       } else {
-        results.authTest = 'UNEXPECTED SUCCESS (should have failed with wrong password)';
+        results.authTestFail = 'ERROR: Should have rejected wrong credentials';
       }
     } catch (err: any) {
-      results.authTest = `EXCEPTION: ${err.message}`;
+      results.authTestFail = `EXCEPTION: ${err.message}`;
+    }
+
+    try {
+      // Test 3: Test login with correct credentials if not already logged in
+      if (!user) {
+        console.log('Testing auth with correct credentials...');
+        const { error } = await signIn('test@example.com', 'testpass');
+        if (!error) {
+          results.authTestSuccess = 'SUCCESS (Login with correct credentials worked)';
+        } else {
+          results.authTestSuccess = `ERROR: ${error.message}`;
+        }
+      } else {
+        results.authTestSuccess = 'SKIPPED (Already logged in)';
+      }
+    } catch (err: any) {
+      results.authTestSuccess = `EXCEPTION: ${err.message}`;
     }
 
     console.log('Debug test results:', results);
@@ -75,25 +79,33 @@ const Debug = () => {
             <h3 className="text-lg font-semibold mb-2">Environment Configuration</h3>
             <div className="bg-gray-100 p-4 rounded font-mono text-sm space-y-1">
               <div>Environment: <span className="font-bold">{debugInfo.environment}</span></div>
-              <div>Supabase URL: <span className="font-bold">{debugInfo.supabaseUrl}</span></div>
-              <div>Supabase Key: <span className="font-bold">{debugInfo.supabaseKey}</span></div>
-              <div>Client URL: <span className="font-bold">{debugInfo.clientUrl}</span></div>
-              <div>Client Key: <span className="font-bold">{debugInfo.clientKey}</span></div>
+              <div>Auth System: <span className="font-bold">{debugInfo.authSystem}</span></div>
+              <div>User ID: <span className="font-bold">{debugInfo.userId}</span></div>
+              <div>User Email: <span className="font-bold">{debugInfo.userEmail}</span></div>
+              <div>Session Active: <span className="font-bold">{debugInfo.sessionActive}</span></div>
             </div>
           </div>
 
           <div>
-            <Button onClick={testConnection} className="mb-4">
-              🧪 Run Connection Tests
-            </Button>
+            <div className="space-x-2 mb-4">
+              <Button onClick={testAuthentication}>
+                🧪 Test Authentication
+              </Button>
+              {user && (
+                <Button onClick={signOut} variant="outline">
+                  🚪 Sign Out
+                </Button>
+              )}
+            </div>
             
             {Object.keys(testResults).length > 0 && (
               <div className="bg-gray-100 p-4 rounded">
                 <h4 className="font-semibold mb-2">Test Results:</h4>
                 <div className="font-mono text-sm space-y-1">
-                  <div>Database Connection: <span className={testResults.connection?.includes('SUCCESS') ? 'text-green-600' : 'text-red-600'}>{testResults.connection}</span></div>
-                  <div>Auth Session: <span className="text-blue-600">{testResults.authSession}</span></div>
-                  <div>Auth Test: <span className={testResults.authTest?.includes('SUCCESS') ? 'text-green-600' : 'text-red-600'}>{testResults.authTest}</span></div>
+                  <div>Auth State: <span className="text-blue-600">{testResults.authState}</span></div>
+                  <div>Session State: <span className="text-blue-600">{testResults.sessionState}</span></div>
+                  <div>Wrong Credentials Test: <span className={testResults.authTestFail?.includes('SUCCESS') ? 'text-green-600' : 'text-red-600'}>{testResults.authTestFail}</span></div>
+                  <div>Correct Credentials Test: <span className={testResults.authTestSuccess?.includes('SUCCESS') ? 'text-green-600' : 'text-red-600'}>{testResults.authTestSuccess}</span></div>
                 </div>
               </div>
             )}
@@ -104,7 +116,7 @@ const Debug = () => {
             <div className="bg-yellow-50 p-4 rounded text-sm">
               <p className="mb-2">1. Press <kbd className="bg-gray-200 px-2 py-1 rounded">F12</kbd> to open Developer Tools</p>
               <p className="mb-2">2. Go to <strong>Console</strong> tab</p>
-              <p className="mb-2">3. Click "Run Connection Tests" above</p>
+              <p className="mb-2">3. Click "Test Authentication" above</p>
               <p>4. Check for any red error messages and copy them</p>
             </div>
           </div>

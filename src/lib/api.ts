@@ -45,8 +45,7 @@ export interface DashboardMetrics {
   growthRate: number;
 }
 
-// Supabase API functions for enterprise components
-import { supabase } from '@/integrations/supabase/client';
+// Mock API functions for enterprise components - no external dependencies
 
 export const analyticsAPI = {
   async getDashboardMetrics(): Promise<DashboardMetrics> {
