@@ -16,7 +16,7 @@ import {
   Upload,
   Settings
 } from 'lucide-react';
-import { ForecastingInterface } from '@/components/enterprise/ForecastingInterface';
+import ForecastingInterface from '@/components/enterprise/ForecastingInterface';
 import { TransactionTable } from '@/components/enterprise/TransactionTable';
 import { FileUploadInterface } from '@/components/enterprise/FileUploadInterface';
 
