@@ -181,10 +181,6 @@ const EnterpriseDashboard: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <CashFlowChart transactions={transactions || []} />
-                    {/* <div className="h-64 flex items-center justify-center text-muted-foreground">
-                      Chart will be rendered here with Recharts
-                    </div>
-                    */
                   </CardContent>
                 </Card>
 
@@ -197,10 +193,6 @@ const EnterpriseDashboard: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <ExpenseBreakdownChart transactions={transactions || []} />
-                    {/* <div className="h-64 flex items-center justify-center text-muted-foreground">
-                      Pie chart will be rendered here
-                    </div>
-                    */
                   </CardContent>
                 </Card>
               </div>

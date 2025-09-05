@@ -1,0 +1,521 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\chank\\claude-code-projects\\zenflux\\playwright.config.ts",
+    "rootDir": "C:/Users/chank/claude-code-projects/zenflux/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/chank/claude-code-projects/zenflux/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/chank/claude-code-projects/zenflux/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev",
+      "port": 8080,
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "simple-validation.spec.ts",
+      "file": "simple-validation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "ZenFlux Enhanced Platform Validation",
+          "file": "simple-validation.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Basic Platform Access and Authentication",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 32979,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts",
+                            "column": 16,
+                            "line": 21
+                          },
+                          "message": "Error: page.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"email\"]')\u001b[22m\n\n\n  19 |     \n  20 |     // Test authentication\n> 21 |     await page.fill('input[type=\"email\"]', 'test@example.com');\n     |                ^\n  22 |     await page.fill('input[type=\"password\"]', 'testpass');\n  23 |     await page.click('button[type=\"submit\"]');\n  24 |     \n    at C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts:21:16"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🔐 Testing Basic Platform Access...\n"
+                        },
+                        {
+                          "text": "✅ Landing page loaded successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-05T17:39:05.336Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--30059-m-Access-and-Authentication-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--30059-m-Access-and-Authentication-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--30059-m-Access-and-Authentication-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "50862e60ecd25ea37a24-35ed361732103eaf1691",
+              "file": "simple-validation.spec.ts",
+              "line": 5,
+              "column": 3
+            },
+            {
+              "title": "Dashboard Features Validation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 33380,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts",
+                            "column": 16,
+                            "line": 39
+                          },
+                          "message": "Error: page.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"email\"]')\u001b[22m\n\n\n  37 |     // Login\n  38 |     await page.goto('http://localhost:8080/auth');\n> 39 |     await page.fill('input[type=\"email\"]', 'test@example.com');\n     |                ^\n  40 |     await page.fill('input[type=\"password\"]', 'testpass');\n  41 |     await page.click('button[type=\"submit\"]');\n  42 |     await page.waitForURL('**/dashboard');\n    at C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts:39:16"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "📊 Testing Dashboard Features...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-05T17:39:39.821Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--c00d8-shboard-Features-Validation-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--c00d8-shboard-Features-Validation-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--c00d8-shboard-Features-Validation-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "50862e60ecd25ea37a24-e287cb98d2e18f90d8bf",
+              "file": "simple-validation.spec.ts",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "Enhanced Features Validation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 33048,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts",
+                            "column": 16,
+                            "line": 72
+                          },
+                          "message": "Error: page.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"email\"]')\u001b[22m\n\n\n  70 |     // Login\n  71 |     await page.goto('http://localhost:8080/auth');\n> 72 |     await page.fill('input[type=\"email\"]', 'test@example.com');\n     |                ^\n  73 |     await page.fill('input[type=\"password\"]', 'testpass');\n  74 |     await page.click('button[type=\"submit\"]');\n  75 |     await page.waitForURL('**/dashboard');\n    at C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts:72:16"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🚀 Testing Enhanced Features...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-05T17:40:14.452Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--feb06-nhanced-Features-Validation-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--feb06-nhanced-Features-Validation-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--feb06-nhanced-Features-Validation-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "50862e60ecd25ea37a24-a8ff483ec2ac825887cb",
+              "file": "simple-validation.spec.ts",
+              "line": 67,
+              "column": 3
+            },
+            {
+              "title": "Performance and UX Validation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 33118,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts",
+                            "column": 16,
+                            "line": 127
+                          },
+                          "message": "Error: page.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"email\"]')\u001b[22m\n\n\n  125 |     const startTime = Date.now();\n  126 |     await page.goto('http://localhost:8080/auth');\n> 127 |     await page.fill('input[type=\"email\"]', 'test@example.com');\n      |                ^\n  128 |     await page.fill('input[type=\"password\"]', 'testpass');\n  129 |     await page.click('button[type=\"submit\"]');\n  130 |     await page.waitForURL('**/dashboard');\n    at C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts:127:16"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "⚡ Testing Performance and UX...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-05T17:40:48.920Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--38566-rformance-and-UX-Validation-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--38566-rformance-and-UX-Validation-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--38566-rformance-and-UX-Validation-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "50862e60ecd25ea37a24-009311c5ace4f980b640",
+              "file": "simple-validation.spec.ts",
+              "line": 121,
+              "column": 3
+            },
+            {
+              "title": "Enhanced MAPE and Variance Analysis Validation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 33050,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts",
+                            "column": 16,
+                            "line": 162
+                          },
+                          "message": "Error: page.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"email\"]')\u001b[22m\n\n\n  160 |     // Login\n  161 |     await page.goto('http://localhost:8080/auth');\n> 162 |     await page.fill('input[type=\"email\"]', 'test@example.com');\n      |                ^\n  163 |     await page.fill('input[type=\"password\"]', 'testpass');\n  164 |     await page.click('button[type=\"submit\"]');\n  165 |     await page.waitForURL('**/dashboard');\n    at C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts:162:16"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "📈 Testing MAPE vs Variance Analysis...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-05T17:41:23.573Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--05304-ariance-Analysis-Validation-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--05304-ariance-Analysis-Validation-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--05304-ariance-Analysis-Validation-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "50862e60ecd25ea37a24-30e156475c2fe9791607",
+              "file": "simple-validation.spec.ts",
+              "line": 157,
+              "column": 3
+            },
+            {
+              "title": "Business Logic and Calculations Validation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 33054,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts",
+                            "column": 16,
+                            "line": 205
+                          },
+                          "message": "Error: page.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"email\"]')\u001b[22m\n\n\n  203 |     // Login\n  204 |     await page.goto('http://localhost:8080/auth');\n> 205 |     await page.fill('input[type=\"email\"]', 'test@example.com');  \n      |                ^\n  206 |     await page.fill('input[type=\"password\"]', 'testpass');\n  207 |     await page.click('button[type=\"submit\"]');\n  208 |     await page.waitForURL('**/dashboard');\n    at C:\\Users\\chank\\claude-code-projects\\zenflux\\tests\\simple-validation.spec.ts:205:16"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧮 Testing Business Logic and Calculations...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-05T17:41:58.055Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--95046-and-Calculations-Validation-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--95046-and-Calculations-Validation-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\chank\\claude-code-projects\\zenflux\\test-results\\simple-validation-ZenFlux--95046-and-Calculations-Validation-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "50862e60ecd25ea37a24-21cc1a532b68b1103204",
+              "file": "simple-validation.spec.ts",
+              "line": 200,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-05T17:39:04.347Z",
+    "duration": 207412.829,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 6,
+    "flaky": 0
+  }
+}
