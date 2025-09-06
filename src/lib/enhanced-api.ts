@@ -30,16 +30,16 @@ export interface Transaction extends MockTransaction {}
 export class EnhancedAnalyticsAPI {
   private static sampleTransactions: MockTransaction[] = [
     // Sample data - in real implementation, this would come from uploaded files
-    { id: '1', date: '2024-08-01', amount: 45000, description: 'Monthly Revenue', category: 'Revenue', type: 'income' },
-    { id: '2', date: '2024-08-01', amount: -12000, description: 'Payroll', category: 'Payroll', type: 'expense' },
-    { id: '3', date: '2024-08-01', amount: -3500, description: 'Office Rent', category: 'Office', type: 'expense' },
-    { id: '4', date: '2024-08-05', amount: 28000, description: 'Consulting Revenue', category: 'Revenue', type: 'income' },
-    { id: '5', date: '2024-08-05', amount: -2200, description: 'Marketing Ads', category: 'Marketing', type: 'expense' },
-    { id: '6', date: '2024-08-10', amount: 52000, description: 'Product Sales', category: 'Revenue', type: 'income' },
-    { id: '7', date: '2024-08-10', amount: -8500, description: 'Infrastructure', category: 'Technology', type: 'expense' },
-    { id: '8', date: '2024-08-15', amount: -15000, description: 'Equipment Purchase', category: 'Equipment', type: 'expense' },
-    { id: '9', date: '2024-08-20', amount: 38000, description: 'Subscription Revenue', category: 'Revenue', type: 'income' },
-    { id: '10', date: '2024-08-25', amount: -6800, description: 'Professional Services', category: 'Services', type: 'expense' },
+    { id: '1', date: '2024-08-01', amount: 45000, description: 'Monthly Revenue', category: 'Revenue', type: 'credit' },
+    { id: '2', date: '2024-08-01', amount: -12000, description: 'Payroll', category: 'Payroll', type: 'debit' },
+    { id: '3', date: '2024-08-01', amount: -3500, description: 'Office Rent', category: 'Office', type: 'debit' },
+    { id: '4', date: '2024-08-05', amount: 28000, description: 'Consulting Revenue', category: 'Revenue', type: 'credit' },
+    { id: '5', date: '2024-08-05', amount: -2200, description: 'Marketing Ads', category: 'Marketing', type: 'debit' },
+    { id: '6', date: '2024-08-10', amount: 52000, description: 'Product Sales', category: 'Revenue', type: 'credit' },
+    { id: '7', date: '2024-08-10', amount: -8500, description: 'Infrastructure', category: 'Technology', type: 'debit' },
+    { id: '8', date: '2024-08-15', amount: -15000, description: 'Equipment Purchase', category: 'Equipment', type: 'debit' },
+    { id: '9', date: '2024-08-20', amount: 38000, description: 'Subscription Revenue', category: 'Revenue', type: 'credit' },
+    { id: '10', date: '2024-08-25', amount: -6800, description: 'Professional Services', category: 'Services', type: 'debit' },
   ];
 
   static async getDashboardMetrics(uploadedTransactions?: MockTransaction[]): Promise<EnhancedDashboardMetrics> {

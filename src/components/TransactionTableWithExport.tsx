@@ -139,7 +139,7 @@ const TransactionTableWithExport: React.FC<TransactionTableProps> = ({
       Date: '',
       Description: '--- SUMMARY ---',
       Category: '',
-      Type: '',
+      Type: '' as 'income' | 'expense',
       Amount: '',
       'Formatted Amount': '',
       'Absolute Amount': ''
@@ -149,7 +149,7 @@ const TransactionTableWithExport: React.FC<TransactionTableProps> = ({
       Date: '',
       Description: 'Total Income',
       Category: '',
-      Type: '',
+      Type: '' as 'income' | 'expense',
       Amount: summary.totalIncome,
       'Formatted Amount': `$${summary.totalIncome.toLocaleString()}`,
       'Absolute Amount': summary.totalIncome
@@ -159,7 +159,7 @@ const TransactionTableWithExport: React.FC<TransactionTableProps> = ({
       Date: '',
       Description: 'Total Expenses',
       Category: '',
-      Type: '',
+      Type: '' as 'income' | 'expense',
       Amount: -summary.totalExpenses,
       'Formatted Amount': `$${(-summary.totalExpenses).toLocaleString()}`,
       'Absolute Amount': summary.totalExpenses
@@ -169,7 +169,7 @@ const TransactionTableWithExport: React.FC<TransactionTableProps> = ({
       Date: '',
       Description: 'Net Flow',
       Category: '',
-      Type: '',
+      Type: '' as 'income' | 'expense',
       Amount: summary.netFlow,
       'Formatted Amount': `$${summary.netFlow.toLocaleString()}`,
       'Absolute Amount': Math.abs(summary.netFlow)

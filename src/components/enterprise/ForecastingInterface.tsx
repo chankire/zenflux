@@ -131,7 +131,7 @@ const ForecastingInterface: React.FC = () => {
         economicFactors: economicScenario || undefined
       };
       
-      const result = await forecastingEngine.generateForecast(forecastConfig, transactions);
+      const result = await forecastingEngine.generateForecast(forecastConfig, transactions as MockTransaction[]);
       setForecast(result);
     } catch (error) {
       console.error('Forecast generation failed:', error);

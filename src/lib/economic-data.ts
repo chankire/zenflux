@@ -45,6 +45,14 @@ export interface MarketData {
   market: string;
 }
 
+export interface EconomicScenario {
+  gdpGrowth: number;
+  inflationRate: number;
+  interestRates: number;
+  forexRates: ForexRate[];
+  marketVolatility: number;
+}
+
 class EconomicDataManager {
   private static instance: EconomicDataManager;
   private cache: Map<string, { data: EconomicDataPoint[], expiry: Date }> = new Map();

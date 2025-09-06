@@ -18,7 +18,8 @@ import {
   AlertTriangle,
   FileText,
   RefreshCw,
-  UserPlus
+  UserPlus,
+  CalendarDays
 } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
@@ -40,6 +41,9 @@ const ExecutiveDashboard = ({ period, onPeriodChange }: ExecutiveDashboardProps)
   const [showVarianceAnalysis, setShowVarianceAnalysis] = useState(false);
   const [actualAccuracy, setActualAccuracy] = useState(97.2);
   const [generating, setGenerating] = useState(false);
+  const [showCustomDateRange, setShowCustomDateRange] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
 
   // Load actual accuracy from variance analysis
   useEffect(() => {
@@ -232,18 +236,99 @@ const ExecutiveDashboard = ({ period, onPeriodChange }: ExecutiveDashboardProps)
               {actualAccuracy && ` • ${actualAccuracy.toFixed(1)}% forecast accuracy`}
             </p>
           </div>
-        <Select value={period} onValueChange={onPeriodChange}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="daily">Daily</SelectItem>
-            <SelectItem value="weekly">Weekly</SelectItem>
-            <SelectItem value="monthly">Monthly</SelectItem>
-            <SelectItem value="quarterly">Quarterly</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center space-x-2">
+          <Select value={period} onValueChange={onPeriodChange}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">Daily</SelectItem>
+              <SelectItem value="weekly">Weekly</SelectItem>
+              <SelectItem value="monthly">Monthly</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCustomDateRange(!showCustomDateRange)}
+            className="flex items-center space-x-1"
+          >
+            <CalendarDays className="h-4 w-4" />
+            <span>Custom Range</span>
+          </Button>
+        </div>
       </div>
+
+      {/* Custom Date Range */}
+      {showCustomDateRange && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5" />
+              <span>Custom Time Window</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => {
+                    if (customStartDate && customEndDate) {
+                      toast({
+                        title: "Custom range applied",
+                        description: `Showing data from ${customStartDate} to ${customEndDate}`,
+                      });
+                    } else {
+                      toast({
+                        title: "Invalid range",
+                        description: "Please select both start and end dates",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="flex-1"
+                >
+                  Apply Range
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setCustomStartDate('');
+                    setCustomEndDate('');
+                  }}
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Key Financial Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -279,13 +364,13 @@ const ExecutiveDashboard = ({ period, onPeriodChange }: ExecutiveDashboardProps)
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Forecast Accuracy</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Risk Score</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{kpis.forecastAccuracy}%</div>
-            <Progress value={kpis.forecastAccuracy} className="mt-2 h-2" />
-            <p className="text-xs text-muted-foreground mt-1">Last 90 days</p>
+            <div className="text-2xl font-bold">{100 - kpis.riskScore}%</div>
+            <Progress value={100 - kpis.riskScore} className="mt-2 h-2" />
+            <p className="text-xs text-muted-foreground mt-1">Financial stability</p>
           </CardContent>
         </Card>
 
@@ -314,20 +399,22 @@ const ExecutiveDashboard = ({ period, onPeriodChange }: ExecutiveDashboardProps)
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Working Capital</span>
-              <span className="font-medium">{formatCurrency(kpis.workingCapital)}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Current Ratio</span>
-              <span className="font-medium">{kpis.currentRatio}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Quick Ratio</span>
-              <span className="font-medium">{kpis.quickRatio}</span>
-            </div>
-            <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Profit Margin</span>
               <span className="font-medium">{kpis.profitMargin}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Revenue Growth</span>
+              <span className="font-medium text-accent">+{kpis.revenueGrowth}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Cash Flow Trend</span>
+              <span className="font-medium text-accent">+{kpis.cashFlowTrend}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Risk Level</span>
+              <Badge variant={kpis.riskScore < 30 ? "default" : kpis.riskScore < 60 ? "secondary" : "destructive"}>
+                {kpis.riskScore < 30 ? 'Low' : kpis.riskScore < 60 ? 'Medium' : 'High'}
+              </Badge>
             </div>
           </CardContent>
         </Card>

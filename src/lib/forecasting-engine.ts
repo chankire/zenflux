@@ -1,5 +1,5 @@
 import { MockTransaction } from './mock-data';
-import { EconomicDataPoint, ForexRate, EconomicIndicator } from './economic-data';
+import { EconomicDataPoint, ForexRate, EconomicIndicator, EconomicScenario } from './economic-data';
 
 export interface ForecastModel {
   id: string;
@@ -22,14 +22,6 @@ export interface ForecastConfig {
   economicFactors?: EconomicScenario;
   modelType?: 'auto' | 'lstm' | 'arima' | 'ensemble' | 'linear' | 'exponential';
   rollingWindow?: number; // days for rolling forecast (default 365)
-}
-
-export interface EconomicScenario {
-  gdpGrowth: number;
-  inflationRate: number;
-  interestRates: number;
-  forexRates: ForexRate[];
-  marketVolatility: number;
 }
 
 export interface ScenarioImpact {
